@@ -13,5 +13,5 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="Р¤РѕСЂРјР°С‚ С…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚РѕРІ СЃРѕ СЃС…РµРјР°РјРё: JSON&#13;Р¤РѕСЂРјР°С‚ С…СЂР°РЅРµРЅРёСЏ СЃРїРёСЃРєР° РѕС‚РєСЂС‹С‚С‹С… РїСЂРѕРµРєС‚РѕРІ: SQLite (.db)&#13;Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Р№ РІРµРЅС‚РёР»СЊ: SM (РЎСѓРјРјР°С‚РѕСЂ)" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+    <TextBlock Text="Формат хранения проектов со схемами: JSON&#13;Формат хранения списка открытых проектов: SQLite (.db)&#13;Дополнительный вентиль: SM (Сумматор)" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
 </Window>
