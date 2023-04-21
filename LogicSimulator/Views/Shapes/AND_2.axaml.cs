@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using System;
 
 namespace LogicSimulator.Views.Shapes {
     public partial class AND_2: UserControl, IGate {
@@ -26,8 +27,8 @@ namespace LogicSimulator.Views.Shapes {
          */
 
         private readonly double base_size = 25;
-        private double width = 25 * 3; // Размеры тела, а не всего UserControl
-        private double height = 25 * 3;
+        private double width = 40 * 3; // Размеры тела, а не всего UserControl
+        private double height = 40 * 3;
 
         public double BaseSize => base_size;
         public double BaseFraction => base_size / 40;
@@ -40,7 +41,7 @@ namespace LogicSimulator.Views.Shapes {
         public Thickness BodyMargin => new(base_size, 0, 0, 0);
         public double BodyWidth => width;
         public double BodyHeight => height;
-        public CornerRadius BodyRadius => new(BaseFraction * 43);
+        public CornerRadius BodyRadius => new(Math.Min(width, height) / 3 + BodyStrokeSize);
 
         public Thickness[] EllipseMargins { get {
             double X = UC_Width - EllipseSize;
@@ -56,7 +57,7 @@ namespace LogicSimulator.Views.Shapes {
 
         public Point[][] PinPoints { get {
             double X = EllipseSize - EllipseStrokeSize / 2;
-            double X2 = base_size * 4 - EllipseStrokeSize / 2;
+            double X2 = base_size + width - EllipseStrokeSize / 2;
             double Y = width / 2 - EllipseSize / 2 - BaseFraction;
             double Y2 = width / 2 + EllipseSize / 2 + BaseFraction;
             double Y3 = width / 2;
@@ -68,8 +69,8 @@ namespace LogicSimulator.Views.Shapes {
             };
         } }
 
-        public double UC_Width => base_size * 5;
-        public double UC_Height => base_size * 3;
+        public double UC_Width => base_size * 2 + width;
+        public double UC_Height => height;
 
         public double FontSizze => BaseFraction * 32;
     }
