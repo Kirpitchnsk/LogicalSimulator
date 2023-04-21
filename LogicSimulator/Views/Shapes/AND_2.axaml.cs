@@ -8,7 +8,9 @@ namespace LogicSimulator.Views.Shapes {
             DataContext = this;
         }
 
+        public UserControl GetSelf() => this;
         public Point GetPos() => new(Margin.Left, Margin.Top);
+        public Size GetSize() => new(Width, Height);
 
         public void Move(Point pos) {
             Margin = new(pos.X, pos.Y, 0, 0);

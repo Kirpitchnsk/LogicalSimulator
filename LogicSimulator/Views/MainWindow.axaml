@@ -23,13 +23,13 @@
 			</MenuItem>
 		</Menu>
 		<Grid ColumnDefinitions="*,3*,*">
-			<TabControl Items="124">
-				<TabControl.ItemTemplate>
+			<ListBox Items="{Binding ItemTypes}" SelectedIndex="{Binding SelectedItem}">
+				<ListBox.ItemTemplate>
 					<DataTemplate>
-						<Image Width="100" Height="100" Source="/Assets/avalonia-logo.ico" Margin="0 20 0 0"/>
+						<ContentControl Content="{Binding}"/>
 					</DataTemplate>
-				</TabControl.ItemTemplate>
-			</TabControl>
+				</ListBox.ItemTemplate>
+			</ListBox>
 			<Panel Grid.Column="1">
 				<TextBlock Text="{Binding Logg}" Background="AliceBlue"/>
 				<Canvas Tag="Scene" Name="Canvas" Background="#0000"/>

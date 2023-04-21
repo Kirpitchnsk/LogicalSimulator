@@ -3,9 +3,46 @@ using Avalonia;
 using LogicSimulator.ViewModels;
 using LogicSimulator.Views.Shapes;
 using System;
+using System.Collections.Generic;
 
 namespace LogicSimulator.Models {
     public class Mapper {
+        /*
+         * Выборка элементов
+         */
+
+        private int selected_item = 0;
+        public int SelectedItem { get => selected_item; set => selected_item = value; }
+
+        private static IGate CreateItem(int n) {
+            return n switch {
+                0 => new AND_2(),
+                1 => new AND_2(),
+                2 => new AND_2(),
+                _ => new AND_2(),
+            };
+        }
+
+        public IGate[] item_types = new IGate[] {
+            CreateItem(0),
+            CreateItem(1),
+            CreateItem(2),
+        };
+
+        public IGate GenSelectedItem() => CreateItem(selected_item);
+
+        /*
+         * Хранилище
+         */
+
+        List<IGate> items = new();
+        public void AddItem(IGate item) {
+            items.Add(item);
+        }
+        public void RemoveItem(IGate item) {
+            items.Remove(item);
+        }
+
         /*
          * Определение режима перемещения
          */
@@ -46,10 +83,10 @@ namespace LogicSimulator.Models {
 
         Point moved_pos;
         IGate? moved_item;
-        bool tapped = false;
         Point item_old_pos;
 
-        public Point tap_pos;
+        public bool tapped = false; // Обрабатывается после Release
+        public Point tap_pos; // Обрабатывается после Release
 
         public void Press(Control item, Point pos) {
             // Log.Write("PointerPressed: " + item.GetType().Name + " pos: " + pos);
@@ -87,12 +124,15 @@ namespace LogicSimulator.Models {
             }
         }
 
-        public void Release(Control item, Point pos) {
+        public int Release(Control item, Point pos) {
             Move(item, pos);
             // Log.Write("PointerReleased: " + item.GetType().Name + " pos: " + pos);
 
             if (tapped) Tapped(item, pos);
+
+            int res_mode = mode;
             mode = 0;
+            return res_mode;
         }
 
         private void Tapped(Control item, Point pos) {

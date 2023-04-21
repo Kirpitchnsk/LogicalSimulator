@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using LogicSimulator.Models;
+using LogicSimulator.Views.Shapes;
 using ReactiveUI;
 using System.Collections.Generic;
 
@@ -61,13 +62,26 @@ namespace LogicSimulator.ViewModels {
             };
             panel.PointerReleased += (object? sender, PointerReleasedEventArgs e) => {
                 if (e.Source != null && e.Source is Control @control) {
-                    var pos = e.GetCurrentPoint(canv).Position;
-                    map.Release(@control, pos);
+                    int mode = map.Release(@control, e.GetCurrentPoint(canv).Position);
+                    bool tap = map.tapped;
+                    if (tap && mode == 1) {
+                        var pos = map.tap_pos;
+                        if (canv == null) return; // Такого не бывает
+
+                        var newy = map.GenSelectedItem();
+                        var size = newy.GetSize() / 2;
+                        newy.Move(pos - new Point(size.Width, size.Height));
+                        canv.Children.Add(newy.GetSelf());
+                        map.AddItem(newy);
+                    }
                 }
             };
             panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) => {
                 if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y);
             };
         }
+
+        public IGate[] ItemTypes { get => map.item_types; }
+        public int SelectedItem { get => map.SelectedItem; set => map.SelectedItem = value; }
     }
 }
