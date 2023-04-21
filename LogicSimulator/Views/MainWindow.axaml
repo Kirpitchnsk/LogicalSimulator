@@ -3,8 +3,8 @@
         xmlns:vm="using:LogicSimulator.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
-		Width="800" Height="800"
+        mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="800"
+		Width="1400" Height="800"
         x:Class="LogicSimulator.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="LogicSimulator">
@@ -13,5 +13,28 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="Формат хранения проектов со схемами: JSON&#13;Формат хранения списка открытых проектов: SQLite (.db)&#13;Дополнительный вентиль: SM (Сумматор)" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+	<DockPanel>
+		<Menu DockPanel.Dock="Top">
+			<MenuItem Header="Файл">
+				<MenuItem Header="Создать" Command="{Binding Comm}" CommandParameter="Create"/>
+				<MenuItem Header="Открыть" Command="{Binding Comm}" CommandParameter="Open"/>
+				<MenuItem Header="Сохранить" Command="{Binding Comm}" CommandParameter="Save"/>
+				<MenuItem Header="Выйти" Command="{Binding Comm}" CommandParameter="Exit"/>
+			</MenuItem>
+		</Menu>
+		<Grid ColumnDefinitions="*,3*,*">
+			<ListBox Items="{Binding ItemTypes}" SelectedIndex="{Binding SelectedItem}">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<ContentControl Content="{Binding}"/>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+			<Panel Grid.Column="1">
+				<TextBlock Text="{Binding Logg}" Background="AliceBlue"/>
+				<Canvas Tag="Scene" Name="Canvas" Background="#0000"/>
+			</Panel>
+			<ListBox Grid.Column="2"></ListBox>
+		</Grid>
+	</DockPanel>
 </Window>
