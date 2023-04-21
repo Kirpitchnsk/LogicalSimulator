@@ -22,11 +22,11 @@ namespace LogicSimulator.Views.Shapes {
         }
 
         /*
-         * Обработка размеров внутренностей
+         * РћР±СЂР°Р±РѕС‚РєР° СЂР°Р·РјРµСЂРѕРІ РІРЅСѓС‚СЂРµРЅРЅРѕСЃС‚РµР№
          */
 
         private readonly double base_size = 25;
-        private double width = 25 * 3; // Размеры тела, а не всего UserControl
+        private double width = 25 * 3; // Р Р°Р·РјРµСЂС‹ С‚РµР»Р°, Р° РЅРµ РІСЃРµРіРѕ UserControl
         private double height = 25 * 3;
 
         public double BaseSize => base_size;
@@ -48,9 +48,9 @@ namespace LogicSimulator.Views.Shapes {
             double Y2 = width / 2 + BaseFraction;
             double Y3 = width / 2 - EllipseSize / 2;
             return new Thickness[] {
-                new(0, Y, 0, 0), // Первый вход
-                new(0, Y2, 0, 0), // Второй вход
-                new(X, Y3, 0, 0), // Единственный выход
+                new(0, Y, 0, 0), // РџРµСЂРІС‹Р№ РІС…РѕРґ
+                new(0, Y2, 0, 0), // Р’С‚РѕСЂРѕР№ РІС…РѕРґ
+                new(X, Y3, 0, 0), // Р•РґРёРЅСЃС‚РІРµРЅРЅС‹Р№ РІС‹С…РѕРґ
             };
         } }
 
@@ -62,9 +62,9 @@ namespace LogicSimulator.Views.Shapes {
             double Y3 = width / 2;
             double PinWidth = base_size - EllipseSize + PinStrokeSize;
             return new Point[][] {
-                new Point[] { new(X, Y), new(X + PinWidth, Y) }, // Первый вход
-                new Point[] { new(X, Y2), new(X + PinWidth, Y2) }, // Второй вход
-                new Point[] { new(X2, Y3), new(X2 + PinWidth, Y3) }, // Единственный выход
+                new Point[] { new(X, Y), new(X + PinWidth, Y) }, // РџРµСЂРІС‹Р№ РІС…РѕРґ
+                new Point[] { new(X, Y2), new(X + PinWidth, Y2) }, // Р’С‚РѕСЂРѕР№ РІС…РѕРґ
+                new Point[] { new(X2, Y3), new(X2 + PinWidth, Y3) }, // Р•РґРёРЅСЃС‚РІРµРЅРЅС‹Р№ РІС‹С…РѕРґ
             };
         } }
 
