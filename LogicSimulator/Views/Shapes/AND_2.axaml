@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="220" d:DesignHeight="120"
+             Width="220" Height="120"
+			 x:Class="LogicSimulator.Views.Shapes.AND_2"
+			 Tag="Gate">
+	<Canvas Tag="Gate" Background="#0000">
+		<Line Tag="Pin" StartPoint="27 44" EndPoint="60 44" Stroke="Gray" StrokeThickness="6"/>
+		<Line Tag="Pin" StartPoint="27 76" EndPoint="60 76" Stroke="Gray" StrokeThickness="6"/>
+		<Line Tag="Pin" StartPoint="160 60" EndPoint="193 60" Stroke="Gray" StrokeThickness="6"/>
+		<Border Tag="Body" Margin="50 0 0 0" Background="#08c" BorderThickness="3" BorderBrush="#4cf" Width="120" Height="120" CornerRadius="43">
+			<TextBlock Tag="Body" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White">AND</TextBlock>
+		</Border>
+		<Ellipse Tag="In" Margin="0 29 0 0" Width="30" Height="30" Stroke="Gray" StrokeThickness="5"/>
+		<Ellipse Tag="In" Margin="0 61 0 0" Width="30" Height="30" Stroke="Gray" StrokeThickness="5"/>
+		<Ellipse Tag="Out" Margin="190 45 0 0" Width="30" Height="30" Stroke="Gray" StrokeThickness="5"/>
+	</Canvas>
+</UserControl>

@@ -30,7 +30,7 @@
 					</DataTemplate>
 				</TabControl.ItemTemplate>
 			</TabControl>
-			<Canvas Grid.Column="1" Background="AliceBlue"></Canvas>
+			<Canvas Tag="Scene" Name="Canvas" Grid.Column="1" Background="AliceBlue"/>
 			<ListBox Grid.Column="2"></ListBox>
 		</Grid>
 	</DockPanel>
