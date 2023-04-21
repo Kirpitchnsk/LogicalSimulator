@@ -18,7 +18,7 @@ namespace LogicSimulator {
             IncrementBuildNum();
         }
 
-        private void IncrementBuildNum() {
+        private static void IncrementBuildNum() {
             string path = "../../../../build.num";
             int num;
             try { num = int.Parse(File.ReadAllText(path)); }
