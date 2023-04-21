@@ -31,8 +31,8 @@
 				</TabControl.ItemTemplate>
 			</TabControl>
 			<Panel Grid.Column="1">
-				<Canvas Tag="Scene" Name="Canvas" Background="AliceBlue"/>
-				<TextBlock Text="{Binding Logg}"/>
+				<TextBlock Text="{Binding Logg}" Background="AliceBlue"/>
+				<Canvas Tag="Scene" Name="Canvas" Background="#0000"/>
 			</Panel>
 			<ListBox Grid.Column="2"></ListBox>
 		</Grid>

@@ -6,7 +6,9 @@ namespace LogicSimulator.Views {
     public partial class MainWindow: Window {
         public MainWindow() {
             InitializeComponent();
-            DataContext = new MainWindowViewModel();
+            var mwvm = new MainWindowViewModel();
+            DataContext = mwvm;
+            mwvm.AddWindow(this);
 
             var ctx = this.Find<Canvas>("Canvas");
             var gate = new AND_2();

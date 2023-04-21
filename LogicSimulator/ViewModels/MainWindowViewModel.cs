@@ -1,5 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using LogicSimulator.Models;
 using ReactiveUI;
 using System.Collections.Generic;
@@ -27,16 +29,45 @@ namespace LogicSimulator.ViewModels {
 
     public class MainWindowViewModel: ViewModelBase {
         private string log = "";
-        readonly Canvas canv = new();
+        Canvas canv = new();
         readonly Mapper map = new();
         public string Logg { get => log; set => this.RaiseAndSetIfChanged(ref log, value); }
 
         public MainWindowViewModel() {
             Log.Mwvm = this;
-            Log.Write("CHECK");
-            
-            // canv = mw.Find<Canvas>("Canvas");
-            // if (canv == null) return;
+
+            /* Так не работает :/
+            var app = Application.Current;
+            if (app == null) return; // Такого не бывает
+            var life = (IClassicDesktopStyleApplicationLifetime?) app.ApplicationLifetime;
+            if (life == null) return; // Такого не бывает
+            foreach (var w in life.Windows) Log.Write("Window: " + w);
+            Log.Write("Windows: " + life.Windows.Count); */
+        }
+
+        public void AddWindow(Window mw) {
+            var canv = mw.Find<Canvas>("Canvas");
+            if (canv == null) return; // Такого не бывает
+            this.canv = canv;
+
+            var panel = (Panel?) canv.Parent;
+            if (panel == null) return; // Такого не бывает
+
+            panel.PointerPressed += (object? sender, PointerPressedEventArgs e) => {
+                if (e.Source != null && e.Source is Control @control) map.Press(@control, e.GetCurrentPoint(canv).Position);
+            };
+            panel.PointerMoved += (object? sender, PointerEventArgs e) => {
+                if (e.Source != null && e.Source is Control @control) map.Move(@control, e.GetCurrentPoint(canv).Position);
+            };
+            panel.PointerReleased += (object? sender, PointerReleasedEventArgs e) => {
+                if (e.Source != null && e.Source is Control @control) {
+                    var pos = e.GetCurrentPoint(canv).Position;
+                    map.Release(@control, pos);
+                }
+            };
+            panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) => {
+                if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y);
+            };
         }
     }
 }
