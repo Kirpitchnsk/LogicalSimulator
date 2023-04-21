@@ -6,6 +6,7 @@
              Width="220" Height="120"
 			 x:Class="LogicSimulator.Views.Shapes.AND_2"
 			 Tag="Gate">
+	
 	<Canvas Tag="Gate" Background="#0000">
 		<Line Tag="Pin" StartPoint="27 44" EndPoint="60 44" Stroke="Gray" StrokeThickness="6"/>
 		<Line Tag="Pin" StartPoint="27 76" EndPoint="60 76" Stroke="Gray" StrokeThickness="6"/>

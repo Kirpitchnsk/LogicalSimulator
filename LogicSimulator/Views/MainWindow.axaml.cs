@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.LogicalTree;
 using LogicSimulator.ViewModels;
 using LogicSimulator.Views.Shapes;
 
