@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using LogicSimulator.Models;
+using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -137,11 +138,13 @@ namespace LogicSimulator.Views.Shapes {
                 joins[n]?.Delete();
                 joins[n] = join;
             }
+            skip_upd = false;
         }
 
         public void RemoveJoin(JoinedItems join) {
             if (join.A.parent == this) joins[join.A.num] = null;
             if (join.B.parent == this) joins[join.B.num] = null;
+            skip_upd = false;
         }
 
         public void UpdateJoins(bool global) {
@@ -169,6 +172,39 @@ namespace LogicSimulator.Views.Shapes {
         public Point GetPinPos(int n, Visual? ref_point) {
             var pin = pins[n];
             return pin.Center(ref_point); // Смотрите Utils ;'-} Там круто сделан метод
+        }
+
+        /*
+         * Мозги
+         */
+
+        bool skip_upd = true;
+        public void LogicUpdate(Dictionary<IGate, Meta> ids, Meta me) {
+            if (skip_upd) return;
+            skip_upd = true;
+
+            int ins = CountIns;
+            for (int i = 0; i < ins; i++) {
+                var join = joins[i];
+                if (join == null) { me.ins[i] = 0; continue; }
+
+                if (join.A.parent == this) {
+                    var item = join.B;
+                    if (item.tag == "Out" || item.tag == "IO") {
+                        var p = item.parent;
+                        Meta meta = ids[p];
+                        me.ins[i] = meta.outs[item.num - p.CountIns];
+                    }
+                }
+                if (join.B.parent == this) {
+                    var item = join.A;
+                    if (item.tag == "Out" || item.tag == "IO") {
+                        var p = item.parent;
+                        Meta meta = ids[p];
+                        me.ins[i] = meta.outs[item.num - p.CountIns];
+                    }
+                }
+            }
         }
     }
 }

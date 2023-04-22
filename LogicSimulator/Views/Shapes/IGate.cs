@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using LogicSimulator.Models;
+using System.Collections.Generic;
 
 namespace LogicSimulator.Views.Shapes {
     public interface IGate {
@@ -23,5 +24,6 @@ namespace LogicSimulator.Views.Shapes {
         public void ClearJoins();
 
         public void Brain(ref bool[] ins, ref bool[] outs);
+        public void LogicUpdate(Dictionary<IGate, Meta> ids, Meta me);
     }
 }
