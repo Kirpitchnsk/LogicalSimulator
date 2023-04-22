@@ -1,6 +1,5 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using LogicSimulator.Models;
 using LogicSimulator.Views.Shapes;
@@ -30,7 +29,7 @@ namespace LogicSimulator.ViewModels {
 
     public class MainWindowViewModel: ViewModelBase {
         private string log = "";
-        Canvas canv = new();
+        // Canvas canv = new();
         readonly Mapper map = new();
         public string Logg { get => log; set => this.RaiseAndSetIfChanged(ref log, value); }
 
@@ -49,7 +48,9 @@ namespace LogicSimulator.ViewModels {
         public void AddWindow(Window mw) {
             var canv = mw.Find<Canvas>("Canvas");
             if (canv == null) return; // Такого не бывает
-            this.canv = canv;
+            // this.canv = canv;
+
+            canv.Children.Add(map.Marker);
 
             var panel = (Panel?) canv.Parent;
             if (panel == null) return; // Такого не бывает
@@ -73,6 +74,11 @@ namespace LogicSimulator.ViewModels {
                         newy.Move(pos - new Point(size.Width, size.Height));
                         canv.Children.Add(newy.GetSelf());
                         map.AddItem(newy);
+                    }
+
+                    if (map.new_join != null) {
+                        canv.Children.Add(map.new_join);
+                        map.new_join = null;
                     }
                 }
             };

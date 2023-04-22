@@ -1,15 +1,26 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using LogicSimulator.Models;
 using LogicSimulator.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace LogicSimulator.Views.Shapes {
     public partial class AND_2: UserControl, IGate, INotifyPropertyChanged {
+        readonly Ellipse[] pins;
         public AND_2() {
             InitializeComponent();
             DataContext = this;
+
+            List<Ellipse> list = new();
+            foreach (var logic in this.LogicalChildren[0].LogicalChildren)
+                if (logic is Ellipse @ellipse) list.Add(@ellipse);
+            if (list.Count != 3) throw new Exception("Чё?!"); // У этой фигуры всегда 3 пина
+            pins = list.ToArray();
+
+            joins = new JoinedItems?[pins.Length];
         }
 
         public UserControl GetSelf() => this;
@@ -19,13 +30,15 @@ namespace LogicSimulator.Views.Shapes {
 
         public void Move(Point pos) {
             Margin = new(pos.X, pos.Y, 0, 0);
+            UpdateJoins(false);
         }
 
-        public void Resize(Size size) {
+        public void Resize(Size size, bool global) {
             double limit = (9 + 32) * 2;
             width = size.Width.Max(limit);
             height = size.Height.Max(limit);
             RecalcSizes();
+            UpdateJoins(global);
         }
 
         /*
@@ -109,6 +122,58 @@ namespace LogicSimulator.Views.Shapes {
             PropertyChanged?.Invoke(this, new(nameof(UC_Height)));
             PropertyChanged?.Invoke(this, new(nameof(FontSizze)));
             PropertyChanged?.Invoke(this, new(nameof(ImageMargins)));
+        }
+
+        /*
+         * Обработка пинов
+         */
+
+        public Distantor GetPin(Ellipse finded, Visual? ref_point) {
+            int n = 0;
+            foreach (var pin in pins) {
+                if (pin == finded) return new(this, n, ref_point, (string?) finded.Tag ?? "");
+                n++;
+            }
+            throw new Exception("Так не бывает");
+        }
+
+        public Point GetPinPos(int n, Visual? ref_point) {
+            var pin = pins[n];
+            return pin.Center(ref_point); // Смотрите Utils ;'-} Там круто сделан метод
+        }
+
+        /*
+         * Обработка соединений
+         */
+
+        // readonly List<JoinedItems> joins = new();
+        readonly JoinedItems?[] joins;
+
+        public void AddJoin(JoinedItems join) {
+            if (join.A.parent == this) {
+                int n = join.A.num;
+                joins[n]?.Delete();
+                joins[n] = join;
+            }
+            if (join.B.parent == this) {
+                int n = join.B.num;
+                joins[n]?.Delete();
+                joins[n] = join;
+            }
+        }
+
+        public void RemoveJoin(JoinedItems join) {
+            if (join.A.parent == this) joins[join.A.num] = null;
+            if (join.B.parent == this) joins[join.B.num] = null;
+        }
+
+        private void UpdateJoins(bool global) {
+            foreach (var join in joins)
+                if (join != null && (!global || join.A.parent == this)) join.Update();
+        }
+
+        public void ClearJoins() {
+            foreach (var join in joins) join?.Delete();
         }
     }
 }
