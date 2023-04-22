@@ -75,6 +75,11 @@ namespace LogicSimulator.ViewModels {
                         canv.Children.Add(newy.GetSelf());
                         map.AddItem(newy);
                     }
+
+                    if (map.new_join != null) {
+                        canv.Children.Add(map.new_join);
+                        map.new_join = null;
+                    }
                 }
             };
             panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) => {

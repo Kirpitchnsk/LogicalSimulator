@@ -108,9 +108,6 @@ namespace LogicSimulator.Models {
         Point item_old_pos;
         Size item_old_size;
 
-        public bool tapped = false; // Обрабатывается после Release
-        public Point tap_pos; // Обрабатывается после Release
-
         Ellipse? marker_circle;
         Distantor? start_dist;
         int marker_mode;
@@ -210,7 +207,7 @@ namespace LogicSimulator.Models {
             case 3:
                 if (moved_item == null) break;
                 var new_size = item_old_size + new Size(delta.X, delta.Y);
-                moved_item.Resize(new_size);
+                moved_item.Resize(new_size, false);
                 break;
             case 5 or 6 or 7:
                 var end_pos = marker_circle == null ? pos : marker_circle.Center(FindCanvas());
@@ -218,6 +215,10 @@ namespace LogicSimulator.Models {
                 break;
             }
         }
+
+        public bool tapped = false; // Обрабатывается после Release
+        public Point tap_pos; // Обрабатывается после Release
+        public Line? new_join; // Обрабатывается после Release
 
         public int Release(Control item, Point pos) {
             Move(item, pos);
@@ -231,6 +232,8 @@ namespace LogicSimulator.Models {
                     var end_dist = gate.GetPin(marker_circle, FindCanvas());
                     Log.Write("Стартовый элемент: " + start_dist.parent + " (" + start_dist.GetPos() + ")");
                     Log.Write("Конечный  элемент: " + end_dist.parent   + " (" + end_dist.GetPos()   + ")");
+                    var newy = new JoinedItems(start_dist, end_dist);
+                    new_join = newy.line;
                 }
                 marker.IsVisible = false;
                 marker_mode = 0;

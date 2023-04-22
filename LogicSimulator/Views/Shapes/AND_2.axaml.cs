@@ -27,13 +27,15 @@ namespace LogicSimulator.Views.Shapes {
 
         public void Move(Point pos) {
             Margin = new(pos.X, pos.Y, 0, 0);
+            UpdateJoins(false);
         }
 
-        public void Resize(Size size) {
+        public void Resize(Size size, bool global) {
             double limit = (9 + 32) * 2;
             width = size.Width.Max(limit);
             height = size.Height.Max(limit);
             RecalcSizes();
+            UpdateJoins(global);
         }
 
         /*
@@ -135,6 +137,20 @@ namespace LogicSimulator.Views.Shapes {
         public Point GetPinPos(int n, Visual? ref_point) {
             var pin = pins[n];
             return pin.Center(ref_point); // Смотрите Utils ;'-} Там круто сделан метод
+        }
+
+        /*
+         * Обработка соединений
+         */
+
+        readonly List<JoinedItems> joins = new();
+
+        public void AddJoin(JoinedItems join) => joins.Add(join);
+        public void RemoveJoin(JoinedItems join) => joins.Remove(join);
+
+        private void UpdateJoins(bool global) {
+            foreach (var join in joins)
+                if (!global || join.A.parent == this) join.Update();
         }
     }
 }
