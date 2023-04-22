@@ -16,7 +16,8 @@ namespace LogicSimulator.Views.Shapes {
         public Distantor GetPin(Ellipse finded, Visual? ref_point);
         public Point GetPinPos(int n, Visual? ref_point);
 
-        // Чую, придётся сделать базовый класс для гейтов
+        // Перенесено в базовый класс GateBase:
+
         public void AddJoin(JoinedItems join);
         public void RemoveJoin(JoinedItems join);
         public void ClearJoins();
