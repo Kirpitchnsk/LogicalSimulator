@@ -1,6 +1,5 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using LogicSimulator.Models;
 using LogicSimulator.Views.Shapes;
@@ -50,6 +49,8 @@ namespace LogicSimulator.ViewModels {
             var canv = mw.Find<Canvas>("Canvas");
             if (canv == null) return; // Такого не бывает
             this.canv = canv;
+
+            canv.Children.Add(map.Marker);
 
             var panel = (Panel?) canv.Parent;
             if (panel == null) return; // Такого не бывает

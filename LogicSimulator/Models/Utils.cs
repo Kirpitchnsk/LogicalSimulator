@@ -11,6 +11,7 @@ using LogicSimulator.ViewModels;
 using System.Collections;
 using System.Diagnostics;
 using System;
+using Avalonia.Controls.Shapes;
 
 using System.Data.SQLite;
 using System.Data;
@@ -635,14 +636,6 @@ namespace LogicSimulator.Models {
             return num;
         }
 
-        public static Rect Sum(this Rect rect, Rect rect2) {
-            return new Rect(
-                rect.X + rect2.X,
-                rect.Y + rect2.Y,
-                rect.Width + rect2.Width,
-                rect.Height + rect2.Height);
-        }
-
         public static double Hypot(this Point delta) {
             return Math.Sqrt(Math.Pow(delta.X, 2) + Math.Pow(delta.Y, 2));
         }
@@ -666,6 +659,19 @@ namespace LogicSimulator.Models {
         public static void Remove(this Control item) {
             var p = (Panel?) item.Parent; // Именно Panel и добавляет понятие Children ;'-}}}}}}}}}}
             p?.Children.Remove(item);
+        }
+
+        public static Point Center(this Visual item, Visual? parent) {
+            var tb = item.TransformedBounds;
+            if (tb == null) return new(); // Обычно так небывает
+            var bounds = tb.Value.Bounds.TransformToAABB(tb.Value.Transform);
+            var res = bounds.Center;
+            if (parent == null) return res; // parent в качестве точки отсчёта, например холст
+
+            var tb2 = parent.TransformedBounds;
+            if (tb2 == null) return res; // Обычно так небывает
+            var bounds2 = tb2.Value.Bounds.TransformToAABB(tb2.Value.Transform);
+            return res - bounds2.TopLeft;
         }
         
         /*

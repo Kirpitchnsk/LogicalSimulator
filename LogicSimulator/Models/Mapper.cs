@@ -4,9 +4,17 @@ using LogicSimulator.ViewModels;
 using LogicSimulator.Views.Shapes;
 using System;
 using System.Collections.Generic;
+using DynamicData;
+using Avalonia.Controls.Shapes;
+using Avalonia.Media;
+using Avalonia.LogicalTree;
+using System.Linq;
 
 namespace LogicSimulator.Models {
     public class Mapper {
+        readonly Line marker = new() { Tag = "Marker", ZIndex = 2, IsVisible = false, Stroke = Brushes.YellowGreen, StrokeThickness = 3 };
+        public Line Marker { get => marker; }
+
         /*
          * Выборка элементов
          */
@@ -55,6 +63,9 @@ namespace LogicSimulator.Models {
          * 2 - двигаем элемент
          * 3 - тянем элемент
          * 4 - вышвыриваем элемент
+         * 5 - тянем линию от входа (In)
+         * 6 - тянем линию от выхода (Out)
+         * 7 - тянем линию от узла (IO)
         */
 
         private void CalcMode(Control item) {
@@ -64,8 +75,16 @@ namespace LogicSimulator.Models {
                 "Body" => 2,
                 "Resizer" => 3,
                 "Deleter" => 4,
+                "In" => 5,
+                "Out" => 6,
+                "IO" => 7,
                 "Pin" or _ => 0,
             };
+        }
+        private static bool IsMode(Control item, string[] mods) {
+            var name = (string?) item.Tag;
+            if (name == null) return false;
+            return mods.IndexOf(name) != -1;
         }
 
         private static UserControl? GetUC(Control item) {
@@ -93,6 +112,10 @@ namespace LogicSimulator.Models {
         public bool tapped = false; // Обрабатывается после Release
         public Point tap_pos; // Обрабатывается после Release
 
+        Ellipse? marker_circle;
+        Ellipse? start_circle;
+        int marker_mode;
+
         public void Press(Control item, Point pos) {
             // Log.Write("PointerPressed: " + item.GetType().Name + " pos: " + pos);
 
@@ -109,13 +132,68 @@ namespace LogicSimulator.Models {
                 if (moved_item == null) break;
                 item_old_size = moved_item.GetBodySize();
                 break;
+            case 5 or 6 or 7:
+                if (marker_circle == null) break;
+                var circle_pos = marker_circle.Center(FindCanvas());
+                marker.StartPoint = marker.EndPoint = circle_pos;
+                marker.IsVisible = true;
+                marker_mode = mode;
+                start_circle = marker_circle;
+                break;
             }
 
             Move(item, pos);
         }
 
+        public Canvas? FindCanvas() {
+            foreach (var item in items) {
+                var p = item.GetSelf().Parent;
+                if (p is Canvas @canv) return @canv;
+            }
+            return null;
+        }
+        public void FixItem(ref Control res, Point pos, IEnumerable<ILogical> items) {
+            foreach (var logic in items) {
+                // if (item.IsPointerOver) { } Гениальная вещь! ;'-} Хотя не, всё равно блокируется после Press и до Release, чего я впринципе хочу избежать ;'-}
+                var item = (Control) logic;
+                var tb = item.TransformedBounds;
+                // if (tb != null && new Rect(tb.Value.Clip.TopLeft, new Size()).Sum(item.Bounds).Contains(pos) && (string?) item.Tag != "Join") res = item; // Гениально! ;'-} НАКОНЕЦ-ТО ЗАРАБОТАЛО! (Так было в 8 лабе)
+                if (tb != null && tb.Value.Bounds.TransformToAABB(tb.Value.Transform).Contains(pos) && (string?) item.Tag != "Join") res = item; // Гениально! Апгрейд прошёл успешно :D
+                FixItem(ref res, pos, item.GetLogicalChildren());
+            }
+        }
         public void Move(Control item, Point pos) {
             // Log.Write("PointerMoved: " + item.GetType().Name + " pos: " + pos);
+
+            if (mode == 5 || mode == 6 || mode == 7) {
+                var canv = FindCanvas();
+                if (canv != null) {
+                    var tb = canv.TransformedBounds;
+                    if (tb != null) {
+                        item = new Canvas() { Tag = "Scene" };
+                        var bounds = tb.Value.Bounds.TransformToAABB(tb.Value.Transform);
+                        FixItem(ref item, pos + bounds.TopLeft, canv.Children);
+                    }
+                }
+            }
+
+            string[] mods = new[] { "In", "Out", "IO" };
+            var tag = (string?) item.Tag;
+            if (IsMode(item, mods) && item is Ellipse @ellipse
+                && !(marker_mode == 5 && tag == "In" || marker_mode == 6 && tag == "Out")) { // То самое место, что не даёт подключить вход ко входу, либо выход к выходу
+
+                if (marker_circle != null && marker_circle != @ellipse) { // На случай моментального перехода курсором с одного кружка на другой
+                    marker_circle.Fill = new SolidColorBrush(Color.Parse("#0000"));
+                    marker_circle.Stroke = Brushes.Gray;
+                }
+                marker_circle = @ellipse;
+                @ellipse.Fill = Brushes.Lime;
+                @ellipse.Stroke = Brushes.Green;
+            } else if (marker_circle != null) {
+                marker_circle.Fill = new SolidColorBrush(Color.Parse("#0000"));
+                marker_circle.Stroke = Brushes.Gray;
+                marker_circle = null;
+            }
 
             var delta = pos - moved_pos;
             if (delta.X == 0 && delta.Y == 0) return;
@@ -133,12 +211,33 @@ namespace LogicSimulator.Models {
                 var new_size = item_old_size + new Size(delta.X, delta.Y);
                 moved_item.Resize(new_size);
                 break;
+            case 5 or 6 or 7:
+                var end_pos = marker_circle == null ? pos : marker_circle.Center(FindCanvas());
+                marker.EndPoint = end_pos;
+                break;
             }
         }
 
         public int Release(Control item, Point pos) {
             Move(item, pos);
             // Log.Write("PointerReleased: " + item.GetType().Name + " pos: " + pos);
+
+            switch (mode) {
+            case 5 or 6 or 7:
+                if (start_circle == null) break;
+                if (marker_circle != null) {
+                    var start_pos = start_circle.Center(FindCanvas());
+                    var end_pos = marker_circle.Center(FindCanvas());
+                    var A = GetGate(start_circle);
+                    var B = GetGate(marker_circle);
+                    if (A == null || B == null) throw new Exception("Чё?!");
+                    Log.Write("Стартовый элемент: " + A + " (" + start_pos + ")");
+                    Log.Write("Конечный  элемент: " + B + " (" + end_pos + ")");
+                }
+                marker.IsVisible = false;
+                marker_mode = 0;
+                break;
+            }
 
             if (tapped) Tapped(item, pos);
 
