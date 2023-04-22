@@ -24,8 +24,8 @@ namespace LogicSimulator.Models {
         private static IGate CreateItem(int n) {
             return n switch {
                 0 => new AND_2(),
-                1 => new AND_2(),
-                2 => new AND_2(),
+                1 => new NOT(),
+                2 => new NOT(),
                 _ => new AND_2(),
             };
         }
@@ -68,7 +68,7 @@ namespace LogicSimulator.Models {
          * 8 - тянем уже существующее соединение - переподключаем
         */
 
-        private int CalcMode(string? tag) {
+        private static int CalcMode(string? tag) {
             if (tag == null) return 0;
             return tag switch {
                 "Scene" => 1,

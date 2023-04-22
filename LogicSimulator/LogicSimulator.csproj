@@ -30,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\Shapes\NOT.axaml.cs">
+      <DependentUpon>NOT.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Shapes\AND_2.axaml.cs">
       <DependentUpon>AND_2.axaml</DependentUpon>
     </Compile>

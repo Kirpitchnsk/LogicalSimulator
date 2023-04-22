@@ -8,16 +8,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace LogicSimulator.Views.Shapes {
-    public partial class AND_2: UserControl, IGate, INotifyPropertyChanged {
+    public partial class NOT: UserControl, IGate, INotifyPropertyChanged {
         readonly Ellipse[] pins;
-        public AND_2() {
+        public NOT() {
             InitializeComponent();
             DataContext = this;
 
             List<Ellipse> list = new();
             foreach (var logic in this.LogicalChildren[0].LogicalChildren)
                 if (logic is Ellipse @ellipse) list.Add(@ellipse);
-            if (list.Count != 3) throw new Exception("Чё?!"); // У этой фигуры всегда 3 пина
+            if (list.Count != 2) throw new Exception("Чё?!"); // У этой фигуры всегда 2 пина
             pins = list.ToArray();
 
             joins = new JoinedItems?[pins.Length];
@@ -36,7 +36,7 @@ namespace LogicSimulator.Views.Shapes {
         public void Resize(Size size, bool global) {
             double limit = (9 + 32) * 2;
             width = size.Width.Max(limit);
-            height = size.Height.Max(limit);
+            height = size.Height.Max(limit / 3 * 2.25);
             RecalcSizes();
             UpdateJoins(global);
         }
@@ -47,7 +47,7 @@ namespace LogicSimulator.Views.Shapes {
 
         private readonly double base_size = 25;
         private double width = 30 * 3; // Размеры тела, а не всего UserControl
-        private double height = 30 * 3;
+        private double height = 30 * 2.25;
 
         public double BaseSize => base_size;
         public double BaseFraction => base_size / 40;
@@ -62,35 +62,23 @@ namespace LogicSimulator.Views.Shapes {
         public double BodyHeight => height;
         public CornerRadius BodyRadius => new(width.Min(height) / 3 + BodyStrokeSize.Top);
 
-        public Point[][] PinPoints { get {
-            double X = EllipseSize - EllipseStrokeSize / 2;
-            double X2 = base_size + width - EllipseStrokeSize / 2;
-            double R = BodyRadius.TopLeft;
-            double Y_s = R, Y_m = height / 2, Y_e = height - Y_s;
-            double min = EllipseSize + BaseFraction * 2;
-            // .1..2.
-            double Y = Y_s + (Y_e - Y_s) / 4;
-            double Y2 = Y_s + (Y_e - Y_s) / 4 * 3;
-            if (Y2 - Y < min) { Y = Y_m - min / 2; Y2 = Y_m + min / 2; }
-            double PinWidth = base_size - EllipseSize + PinStrokeSize;
-            return new Point[][] {
-                new Point[] { new(X, Y), new(X + PinWidth, Y) }, // Первый вход
-                new Point[] { new(X, Y2), new(X + PinWidth, Y2) }, // Второй вход
-                new Point[] { new(X2, Y_m), new(X2 + PinWidth, Y_m) }, // Единственный выход
+        public Thickness[] EllipseMargins { get {
+            double X = UC_Width - EllipseSize;
+            double Y = height / 2 - EllipseSize / 2;
+            return new Thickness[] {
+                new(0, Y, 0, 0), // Единственный вход
+                new(X, Y, 0, 0), // Единственный выход
             };
         } }
 
-        public Thickness[] EllipseMargins { get {
-            Point[][] pins = PinPoints;
-            double R2 = EllipseSize / 2;
-            double X = UC_Width - EllipseSize;
-            double Y = pins[0][0].Y - R2;
-            double Y2 = pins[1][0].Y - R2;
-            double Y3 = pins[2][0].Y - R2;
-            return new Thickness[] {
-                new(0, Y, 0, 0), // Первый вход
-                new(0, Y2, 0, 0), // Второй вход
-                new(X, Y3, 0, 0), // Единственный выход
+        public Point[][] PinPoints { get {
+            double X = EllipseSize - EllipseStrokeSize / 2;
+            double X2 = base_size + width - EllipseStrokeSize / 2;
+            double Y = height / 2;
+            double PinWidth = base_size - EllipseSize + PinStrokeSize;
+            return new Point[][] {
+                new Point[] { new(X, Y), new(X + PinWidth, Y) }, // Единственный вход
+                new Point[] { new(X2, Y), new(X2 + PinWidth, Y) }, // Единственный выход
             };
         } }
 
