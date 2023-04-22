@@ -14,6 +14,8 @@ namespace LogicSimulator.Models {
         readonly Line marker = new() { Tag = "Marker", ZIndex = 2, IsVisible = false, Stroke = Brushes.YellowGreen, StrokeThickness = 3 };
         public Line Marker { get => marker; }
 
+        readonly Simulator sim = new();
+
         /*
          * Выборка элементов
          */
@@ -49,9 +51,11 @@ namespace LogicSimulator.Models {
         readonly List<IGate> items = new();
         public void AddItem(IGate item) {
             items.Add(item);
+            sim.AddItem(item);
         }
         public void RemoveItem(IGate item) {
             items.Remove(item);
+            sim.RemoveItem(item);
         }
 
         /*

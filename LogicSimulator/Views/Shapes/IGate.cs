@@ -5,6 +5,8 @@ using LogicSimulator.Models;
 
 namespace LogicSimulator.Views.Shapes {
     public interface IGate {
+        public int CountIns { get; }
+        public int CountOuts { get; }
         public UserControl GetSelf();
 
         public Point GetPos();
@@ -16,10 +18,10 @@ namespace LogicSimulator.Views.Shapes {
         public Distantor GetPin(Ellipse finded, Visual? ref_point);
         public Point GetPinPos(int n, Visual? ref_point);
 
-        // Перенесено в базовый класс GateBase:
-
         public void AddJoin(JoinedItems join);
         public void RemoveJoin(JoinedItems join);
         public void ClearJoins();
+
+        public void Brain(ref bool[] ins, ref bool[] outs);
     }
 }

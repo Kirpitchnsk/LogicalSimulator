@@ -4,8 +4,8 @@ using System.ComponentModel;
 
 namespace LogicSimulator.Views.Shapes {
     public partial class XOR_2: GateBase, IGate, INotifyPropertyChanged {
-        protected override int CountIns => 2;
-        protected override int CountOuts => 1;
+        public override int CountIns => 2;
+        public override int CountOuts => 1;
         public override UserControl GetSelf() => this;
         protected override IGate GetSelfI => this;
 
@@ -36,5 +36,11 @@ namespace LogicSimulator.Views.Shapes {
                 new Point[] { new(X2, Y_m), new(X2 + PinWidth, Y_m) }, // Единственный выход
             };
         } }
+
+        /*
+         * Мозги
+         */
+
+        public void Brain(ref bool[] ins, ref bool[] outs) => outs[0] = ins[0] ^ ins[1];
     }
 }

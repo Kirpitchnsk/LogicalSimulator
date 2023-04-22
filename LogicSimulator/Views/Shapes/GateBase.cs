@@ -8,8 +8,8 @@ using System.ComponentModel;
 
 namespace LogicSimulator.Views.Shapes {
     public abstract class GateBase: UserControl {
-        protected abstract int CountIns { get; }
-        protected abstract int CountOuts { get; }
+        public abstract int CountIns { get; }
+        public abstract int CountOuts { get; }
         public abstract UserControl GetSelf();
         protected abstract IGate GetSelfI { get; }
         protected abstract void Init();
