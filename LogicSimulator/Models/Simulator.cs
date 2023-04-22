@@ -31,9 +31,9 @@ namespace LogicSimulator.Models {
         public Simulator() {
             var task = Task.Run(async () => {
                 for (;;) {
-                    await Task.Delay(1000);
+                    await Task.Delay(1000 / 60); // Повышааааааееееем оборооооооотыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыы!!! 60 герц...
                     try { Tick(); }
-                    catch (Exception e) { Log.Write("E: " + e); }
+                    catch (Exception e) { Log.Write("Logical crush: " + e); break; }
                 }
             });
         }
@@ -57,7 +57,7 @@ namespace LogicSimulator.Models {
             items.Add(meta);
             ids.Add(item, meta);
 
-            meta.Print();
+            // meta.Print();
         }
 
         public void RemoveItem(IGate item) {
@@ -78,11 +78,15 @@ namespace LogicSimulator.Models {
 
                 for (int i = 0; i < ib.Length; i++) ib[i] = outs[i_n[i]];
                 item.Brain(ref ib, ref ob);
-                for (int i = 0; i < ob.Length; i++) outs2[o_n[i]] = ob[i];
+                for (int i = 0; i < ob.Length; i++) {
+                    bool res = ob[i];
+                    outs2[o_n[i]] = res;
+                    item.SetJoinColor(i, res);
+                }
             }
 
-            (outs2, outs) = (outs, outs2);
-            Log.Write("Выходы: " + Utils.Obj2json(outs));
+            (outs2, outs) = (outs, outs2); // Магия здесь!
+            // Log.Write("Выходы: " + Utils.Obj2json(outs));
         }
     }
 }

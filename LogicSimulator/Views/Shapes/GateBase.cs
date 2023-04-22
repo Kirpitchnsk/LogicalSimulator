@@ -1,8 +1,9 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
+using Avalonia.Media;
+using Avalonia.Threading;
 using LogicSimulator.Models;
-using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -154,6 +155,14 @@ namespace LogicSimulator.Views.Shapes {
 
         public void ClearJoins() {
             foreach (var join in joins) join?.Delete();
+        }
+
+        public void SetJoinColor(int o_num, bool value) {
+            var join = joins[o_num + CountIns];
+            if (join != null)
+                Dispatcher.UIThread.InvokeAsync(() => { // Ох, знакомая головная боль с андроида, где даже Toast за пределами главного потока не вызовешь :/ XD :D
+                    join.line.Stroke = value ? Brushes.Lime : Brushes.DarkGray;
+                });
         }
 
         /*

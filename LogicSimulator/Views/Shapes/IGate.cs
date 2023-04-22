@@ -22,6 +22,7 @@ namespace LogicSimulator.Views.Shapes {
         public void AddJoin(JoinedItems join);
         public void RemoveJoin(JoinedItems join);
         public void ClearJoins();
+        public void SetJoinColor(int o_num, bool value);
 
         public void Brain(ref bool[] ins, ref bool[] outs);
         public void LogicUpdate(Dictionary<IGate, Meta> ids, Meta me);
