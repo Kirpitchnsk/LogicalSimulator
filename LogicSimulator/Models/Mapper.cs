@@ -230,8 +230,8 @@ namespace LogicSimulator.Models {
                 if (marker_circle != null) {
                     var gate = GetGate(marker_circle) ?? throw new Exception("Чё?!"); // Такого не бывает
                     var end_dist = gate.GetPin(marker_circle, FindCanvas());
-                    Log.Write("Стартовый элемент: " + start_dist.parent + " (" + start_dist.GetPos() + ")");
-                    Log.Write("Конечный  элемент: " + end_dist.parent   + " (" + end_dist.GetPos()   + ")");
+                    // Log.Write("Стартовый элемент: " + start_dist.parent + " (" + start_dist.GetPos() + ")");
+                    // Log.Write("Конечный  элемент: " + end_dist.parent   + " (" + end_dist.GetPos()   + ")");
                     var newy = new JoinedItems(start_dist, end_dist);
                     new_join = newy.line;
                 }
@@ -248,11 +248,12 @@ namespace LogicSimulator.Models {
         }
 
         private void Tapped(Control item, Point pos) {
-            Log.Write("Tapped: " + item.GetType().Name + " pos: " + pos);
+            // Log.Write("Tapped: " + item.GetType().Name + " pos: " + pos);
             tap_pos = pos;
 
             if (mode == 4 && moved_item != null) {
                 RemoveItem(moved_item);
+                moved_item.ClearJoins();
                 ((Control) moved_item).Remove();
             }
         }

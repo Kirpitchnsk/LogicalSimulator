@@ -19,6 +19,6 @@ namespace LogicSimulator.Views.Shapes {
         // Чую, придётся сделать базовый класс для гейтов
         public void AddJoin(JoinedItems join);
         public void RemoveJoin(JoinedItems join);
-
+        public void ClearJoins();
     }
 }

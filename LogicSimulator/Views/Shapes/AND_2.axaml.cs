@@ -18,6 +18,8 @@ namespace LogicSimulator.Views.Shapes {
                 if (logic is Ellipse @ellipse) list.Add(@ellipse);
             if (list.Count != 3) throw new Exception("Чё?!"); // У этой фигуры всегда 3 пина
             pins = list.ToArray();
+
+            joins = new JoinedItems?[pins.Length];
         }
 
         public UserControl GetSelf() => this;
@@ -143,14 +145,30 @@ namespace LogicSimulator.Views.Shapes {
          * Обработка соединений
          */
 
-        readonly List<JoinedItems> joins = new();
+        // readonly List<JoinedItems> joins = new();
+        readonly JoinedItems?[] joins;
 
-        public void AddJoin(JoinedItems join) => joins.Add(join);
-        public void RemoveJoin(JoinedItems join) => joins.Remove(join);
+        public void AddJoin(JoinedItems join) {
+            var dist = join.A.parent == this ? join.A : join.B;
+            if (dist.parent != this) throw new Exception("Такого не бывает");
+            int n = dist.num;
+            joins[n]?.Delete();
+            joins[n] = join;
+        }
+
+        public void RemoveJoin(JoinedItems join) {
+            var dist = join.A.parent == this ? join.A : join.B;
+            if (dist.parent != this) throw new Exception("Такого не бывает");
+            joins[dist.num] = null;
+        }
 
         private void UpdateJoins(bool global) {
             foreach (var join in joins)
-                if (!global || join.A.parent == this) join.Update();
+                if (join != null && (!global || join.A.parent == this)) join.Update();
+        }
+
+        public void ClearJoins() {
+            foreach (var join in joins) join?.Delete();
         }
     }
 }
