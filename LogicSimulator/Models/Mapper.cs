@@ -24,8 +24,10 @@ namespace LogicSimulator.Models {
         private static IGate CreateItem(int n) {
             return n switch {
                 0 => new AND_2(),
-                1 => new NOT(),
+                1 => new OR_2(),
                 2 => new NOT(),
+                3 => new XOR_2(),
+                4 => new SuM(),
                 _ => new AND_2(),
             };
         }
@@ -34,6 +36,8 @@ namespace LogicSimulator.Models {
             CreateItem(0),
             CreateItem(1),
             CreateItem(2),
+            CreateItem(3),
+            CreateItem(4),
         };
 
         public IGate GenSelectedItem() => CreateItem(selected_item);
