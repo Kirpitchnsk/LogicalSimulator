@@ -65,11 +65,12 @@ namespace LogicSimulator.Models {
          * 5 - тянем линию от входа (In)
          * 6 - тянем линию от выхода (Out)
          * 7 - тянем линию от узла (IO)
+         * 8 - тянем уже существующее соединение - переподключаем
         */
 
-        private void CalcMode(Control item) {
-            var c = (string?) item.Tag;
-            mode = c switch {
+        private int CalcMode(string? tag) {
+            if (tag == null) return 0;
+            return tag switch {
                 "Scene" => 1,
                 "Body" => 2,
                 "Resizer" => 3,
@@ -77,9 +78,12 @@ namespace LogicSimulator.Models {
                 "In" => 5,
                 "Out" => 6,
                 "IO" => 7,
+                "Join" => 8,
                 "Pin" or _ => 0,
             };
         }
+        private void UpdateMode(Control item) => mode = CalcMode((string?) item.Tag);
+        
         private static bool IsMode(Control item, string[] mods) {
             var name = (string?) item.Tag;
             if (name == null) return false;
@@ -112,10 +116,14 @@ namespace LogicSimulator.Models {
         Distantor? start_dist;
         int marker_mode;
 
+        Line? old_join;
+        bool join_start;
+        bool delete_join = false;
+
         public void Press(Control item, Point pos) {
             // Log.Write("PointerPressed: " + item.GetType().Name + " pos: " + pos);
 
-            CalcMode(item);
+            UpdateMode(item);
             Log.Write("new_mode: " + mode);
 
             moved_pos = pos;
@@ -137,6 +145,23 @@ namespace LogicSimulator.Models {
                 marker.StartPoint = marker.EndPoint = circle_pos;
                 marker.IsVisible = true;
                 marker_mode = mode;
+                break;
+            case 8:
+                if (item is not Line @join) break;
+                JoinedItems.arrow_to_join.TryGetValue(@join, out var @join2);
+                if (@join2 == null) break;
+
+                var dist_a = @join.StartPoint.Hypot(pos);
+                var dist_b = @join.EndPoint.Hypot(pos);
+                join_start = dist_a > dist_b;
+                old_join = @join;
+
+                marker.StartPoint = join_start ? @join.StartPoint : pos;
+                marker.EndPoint = join_start ? pos : @join.EndPoint;
+                marker_mode = CalcMode(join_start ? @join2.A.tag : @join2.B.tag);
+
+                marker.IsVisible = true;
+                @join.IsVisible = false;
                 break;
             }
 
@@ -163,7 +188,7 @@ namespace LogicSimulator.Models {
         public void Move(Control item, Point pos) {
             // Log.Write("PointerMoved: " + item.GetType().Name + " pos: " + pos);
 
-            if (mode == 5 || mode == 6 || mode == 7) {
+            if (mode == 5 || mode == 6 || mode == 7 || mode == 8) {
                 var canv = FindCanvas();
                 if (canv != null) {
                     var tb = canv.TransformedBounds;
@@ -193,6 +218,15 @@ namespace LogicSimulator.Models {
                 marker_circle = null;
             }
 
+            if (mode == 8) delete_join = (string?) item.Tag == "Deleter";
+
+            /* if (mode == 0 && (string?) item.Tag == "Join") { DEBUG
+                JoinedItems.arrow_to_join.TryGetValue((Line) item, out var @join);
+                if (@join != null) Log.Write("J a->b: id" + items.IndexOf(@join.A.parent) + " n:" + @join.A.num + "    id" + items.IndexOf(@join.B.parent) + " n:" + @join.B.num);
+            }*/
+
+
+
             var delta = pos - moved_pos;
             if (delta.X == 0 && delta.Y == 0) return;
 
@@ -212,6 +246,12 @@ namespace LogicSimulator.Models {
             case 5 or 6 or 7:
                 var end_pos = marker_circle == null ? pos : marker_circle.Center(FindCanvas());
                 marker.EndPoint = end_pos;
+                break;
+            case 8:
+                if (old_join == null) break;
+                var p = marker_circle == null ? pos : marker_circle.Center(FindCanvas());
+                if (join_start) marker.EndPoint = p;
+                else marker.StartPoint = p;
                 break;
             }
         }
@@ -237,6 +277,25 @@ namespace LogicSimulator.Models {
                 }
                 marker.IsVisible = false;
                 marker_mode = 0;
+                break;
+            case 8:
+                if (old_join == null) break;
+                JoinedItems.arrow_to_join.TryGetValue(old_join, out var @join);
+                if (marker_circle != null && @join != null) {
+                    var gate = GetGate(marker_circle) ?? throw new Exception("Чё?!"); // Такого не бывает
+                    var p = gate.GetPin(marker_circle, FindCanvas());
+                    @join.Delete();
+
+                    var newy = join_start ? new JoinedItems(@join.A, p) : new JoinedItems(p, @join.B);
+                    new_join = newy.line;
+                } else old_join.IsVisible = true;
+
+                marker.IsVisible = false;
+                marker_mode = 0;
+                old_join = null;
+
+                if (delete_join) @join?.Delete();
+                delete_join = false;
                 break;
             }
 

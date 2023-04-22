@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using LogicSimulator.Models;
+using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -130,10 +131,10 @@ namespace LogicSimulator.Views.Shapes {
         public Distantor GetPin(Ellipse finded, Visual? ref_point) {
             int n = 0;
             foreach (var pin in pins) {
-                if (pin == finded) return new(this, n, ref_point);
+                if (pin == finded) return new(this, n, ref_point, (string?) finded.Tag ?? "");
                 n++;
             }
-            return new(this, -1, ref_point);
+            throw new Exception("Так не бывает");
         }
 
         public Point GetPinPos(int n, Visual? ref_point) {
@@ -149,17 +150,21 @@ namespace LogicSimulator.Views.Shapes {
         readonly JoinedItems?[] joins;
 
         public void AddJoin(JoinedItems join) {
-            var dist = join.A.parent == this ? join.A : join.B;
-            if (dist.parent != this) throw new Exception("Такого не бывает");
-            int n = dist.num;
-            joins[n]?.Delete();
-            joins[n] = join;
+            if (join.A.parent == this) {
+                int n = join.A.num;
+                joins[n]?.Delete();
+                joins[n] = join;
+            }
+            if (join.B.parent == this) {
+                int n = join.B.num;
+                joins[n]?.Delete();
+                joins[n] = join;
+            }
         }
 
         public void RemoveJoin(JoinedItems join) {
-            var dist = join.A.parent == this ? join.A : join.B;
-            if (dist.parent != this) throw new Exception("Такого не бывает");
-            joins[dist.num] = null;
+            if (join.A.parent == this) joins[join.A.num] = null;
+            if (join.B.parent == this) joins[join.B.num] = null;
         }
 
         private void UpdateJoins(bool global) {
