@@ -14,6 +14,8 @@ namespace LogicSimulator.Models {
         readonly Line marker = new() { Tag = "Marker", ZIndex = 2, IsVisible = false, Stroke = Brushes.YellowGreen, StrokeThickness = 3 };
         public Line Marker { get => marker; }
 
+        readonly Simulator sim = new();
+
         /*
          * Выборка элементов
          */
@@ -24,8 +26,10 @@ namespace LogicSimulator.Models {
         private static IGate CreateItem(int n) {
             return n switch {
                 0 => new AND_2(),
-                1 => new AND_2(),
-                2 => new AND_2(),
+                1 => new OR_2(),
+                2 => new NOT(),
+                3 => new XOR_2(),
+                4 => new SuM(),
                 _ => new AND_2(),
             };
         }
@@ -34,6 +38,8 @@ namespace LogicSimulator.Models {
             CreateItem(0),
             CreateItem(1),
             CreateItem(2),
+            CreateItem(3),
+            CreateItem(4),
         };
 
         public IGate GenSelectedItem() => CreateItem(selected_item);
@@ -45,9 +51,11 @@ namespace LogicSimulator.Models {
         readonly List<IGate> items = new();
         public void AddItem(IGate item) {
             items.Add(item);
+            sim.AddItem(item);
         }
         public void RemoveItem(IGate item) {
             items.Remove(item);
+            sim.RemoveItem(item);
         }
 
         /*
@@ -68,7 +76,7 @@ namespace LogicSimulator.Models {
          * 8 - тянем уже существующее соединение - переподключаем
         */
 
-        private int CalcMode(string? tag) {
+        private static int CalcMode(string? tag) {
             if (tag == null) return 0;
             return tag switch {
                 "Scene" => 1,

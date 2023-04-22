@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using System.ComponentModel;
 
 namespace LogicSimulator.Views.Shapes {
-    public partial class AND_2: GateBase, IGate, INotifyPropertyChanged {
+    public partial class XOR_2: GateBase, IGate, INotifyPropertyChanged {
         public override int CountIns => 2;
         public override int CountOuts => 1;
         public override UserControl GetSelf() => this;
@@ -41,6 +41,6 @@ namespace LogicSimulator.Views.Shapes {
          * Мозги
          */
 
-        public void Brain(ref bool[] ins, ref bool[] outs) => outs[0] = ins[0] && ins[1];
+        public void Brain(ref bool[] ins, ref bool[] outs) => outs[0] = ins[0] ^ ins[1];
     }
 }

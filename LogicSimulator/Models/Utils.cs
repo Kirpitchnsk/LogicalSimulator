@@ -653,6 +653,8 @@ namespace LogicSimulator.Models {
             };
         }
 
+        public static int Min(this int A, int B) => A < B ? A : B;
+        public static int Max(this int A, int B) => A > B ? A : B;
         public static double Min(this double A, double B) => A < B ? A : B;
         public static double Max(this double A, double B) => A > B ? A : B;
 

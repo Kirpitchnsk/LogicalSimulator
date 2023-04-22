@@ -2,9 +2,12 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using LogicSimulator.Models;
+using System.Collections.Generic;
 
 namespace LogicSimulator.Views.Shapes {
     public interface IGate {
+        public int CountIns { get; }
+        public int CountOuts { get; }
         public UserControl GetSelf();
 
         public Point GetPos();
@@ -16,9 +19,12 @@ namespace LogicSimulator.Views.Shapes {
         public Distantor GetPin(Ellipse finded, Visual? ref_point);
         public Point GetPinPos(int n, Visual? ref_point);
 
-        // Чую, придётся сделать базовый класс для гейтов
         public void AddJoin(JoinedItems join);
         public void RemoveJoin(JoinedItems join);
         public void ClearJoins();
+        public void SetJoinColor(int o_num, bool value);
+
+        public void Brain(ref bool[] ins, ref bool[] outs);
+        public void LogicUpdate(Dictionary<IGate, Meta> ids, Meta me);
     }
 }

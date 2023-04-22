@@ -14,7 +14,7 @@ namespace LogicSimulator.Models {
         }
         public Distantor A { get; set; }
         public Distantor B { get; set; }
-        public Line line = new() { Tag = "Join", ZIndex = 2, Stroke = Brushes.Lime, StrokeThickness = 3 };
+        public Line line = new() { Tag = "Join", ZIndex = 2, Stroke = Brushes.DarkGray, StrokeThickness = 3 };
 
         public void Update() {
             line.StartPoint = A.GetPos();
