@@ -1,15 +1,23 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using LogicSimulator.Models;
-using LogicSimulator.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace LogicSimulator.Views.Shapes {
     public partial class AND_2: UserControl, IGate, INotifyPropertyChanged {
+        readonly Ellipse[] pins;
         public AND_2() {
             InitializeComponent();
             DataContext = this;
+
+            List<Ellipse> list = new();
+            foreach (var logic in this.LogicalChildren[0].LogicalChildren)
+                if (logic is Ellipse @ellipse) list.Add(@ellipse);
+            if (list.Count != 3) throw new Exception("Чё?!"); // У этой фигуры всегда 3 пина
+            pins = list.ToArray();
         }
 
         public UserControl GetSelf() => this;
@@ -109,6 +117,24 @@ namespace LogicSimulator.Views.Shapes {
             PropertyChanged?.Invoke(this, new(nameof(UC_Height)));
             PropertyChanged?.Invoke(this, new(nameof(FontSizze)));
             PropertyChanged?.Invoke(this, new(nameof(ImageMargins)));
+        }
+
+        /*
+         * Обработка пинов
+         */
+
+        public Distantor GetPin(Ellipse finded, Visual? ref_point) {
+            int n = 0;
+            foreach (var pin in pins) {
+                if (pin == finded) return new(this, n, ref_point);
+                n++;
+            }
+            return new(this, -1, ref_point);
+        }
+
+        public Point GetPinPos(int n, Visual? ref_point) {
+            var pin = pins[n];
+            return pin.Center(ref_point); // Смотрите Utils ;'-} Там круто сделан метод
         }
     }
 }

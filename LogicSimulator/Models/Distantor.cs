@@ -1,25 +1,18 @@
 ﻿using Avalonia;
 using LogicSimulator.Views.Shapes;
-using System;
 
 namespace LogicSimulator.Models {
-    public class Distantor : IComparable {
-        readonly int dist;
+    public class Distantor {
         public readonly int num;
-        public readonly double delta;
         public IGate parent;
+        readonly Visual? ref_point;
 
-        public Distantor(IGate parent, double dist, int n, double d) {
+        public Distantor(IGate parent, int n, Visual? r_p) { // В отличие от 8 лабораторной, здесь слишком просто хранить точку связывания ;'-}
             this.parent = parent;
-            this.dist = (int)dist;
-            num = n; delta = d;
+            num = n; // Например, в AND_2-gate'е:   0 и 1 - входы, 2 - выход
+            ref_point = r_p;
         }
 
-        public int CompareTo(object? obj) {
-            if (obj is not Distantor @R) throw new ArgumentException("Ожидался Distantor", nameof(obj));
-            return dist - @R.dist;
-        }
-
-        public Point GetPos() => parent.GetPos();
+        public Point GetPos() => parent.GetPinPos(num, ref_point);
     }
 }

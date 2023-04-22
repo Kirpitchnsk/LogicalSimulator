@@ -8,7 +8,6 @@ using DynamicData;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.LogicalTree;
-using System.Linq;
 
 namespace LogicSimulator.Models {
     public class Mapper {
@@ -113,7 +112,7 @@ namespace LogicSimulator.Models {
         public Point tap_pos; // Обрабатывается после Release
 
         Ellipse? marker_circle;
-        Ellipse? start_circle;
+        Distantor? start_dist;
         int marker_mode;
 
         public void Press(Control item, Point pos) {
@@ -134,11 +133,13 @@ namespace LogicSimulator.Models {
                 break;
             case 5 or 6 or 7:
                 if (marker_circle == null) break;
-                var circle_pos = marker_circle.Center(FindCanvas());
+                var gate = GetGate(marker_circle) ?? throw new Exception("Чё?!"); // Такого не бывает
+                start_dist = gate.GetPin(marker_circle, FindCanvas());
+
+                var circle_pos = start_dist.GetPos();
                 marker.StartPoint = marker.EndPoint = circle_pos;
                 marker.IsVisible = true;
                 marker_mode = mode;
-                start_circle = marker_circle;
                 break;
             }
 
@@ -224,15 +225,12 @@ namespace LogicSimulator.Models {
 
             switch (mode) {
             case 5 or 6 or 7:
-                if (start_circle == null) break;
+                if (start_dist == null) break;
                 if (marker_circle != null) {
-                    var start_pos = start_circle.Center(FindCanvas());
-                    var end_pos = marker_circle.Center(FindCanvas());
-                    var A = GetGate(start_circle);
-                    var B = GetGate(marker_circle);
-                    if (A == null || B == null) throw new Exception("Чё?!");
-                    Log.Write("Стартовый элемент: " + A + " (" + start_pos + ")");
-                    Log.Write("Конечный  элемент: " + B + " (" + end_pos + ")");
+                    var gate = GetGate(marker_circle) ?? throw new Exception("Чё?!"); // Такого не бывает
+                    var end_dist = gate.GetPin(marker_circle, FindCanvas());
+                    Log.Write("Стартовый элемент: " + start_dist.parent + " (" + start_dist.GetPos() + ")");
+                    Log.Write("Конечный  элемент: " + end_dist.parent   + " (" + end_dist.GetPos()   + ")");
                 }
                 marker.IsVisible = false;
                 marker_mode = 0;

@@ -663,13 +663,13 @@ namespace LogicSimulator.Models {
 
         public static Point Center(this Visual item, Visual? parent) {
             var tb = item.TransformedBounds;
-            if (tb == null) return new(); // Обычно так небывает
+            if (tb == null) return new(); // Обычно так не бывает
             var bounds = tb.Value.Bounds.TransformToAABB(tb.Value.Transform);
             var res = bounds.Center;
             if (parent == null) return res; // parent в качестве точки отсчёта, например холст
 
             var tb2 = parent.TransformedBounds;
-            if (tb2 == null) return res; // Обычно так небывает
+            if (tb2 == null) return res; // Обычно так не бывает
             var bounds2 = tb2.Value.Bounds.TransformToAABB(tb2.Value.Transform);
             return res - bounds2.TopLeft;
         }
