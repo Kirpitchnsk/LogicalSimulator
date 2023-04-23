@@ -6,6 +6,7 @@ using LogicSimulator.Models;
 using LogicSimulator.Views;
 using LogicSimulator.Views.Shapes;
 using ReactiveUI;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -39,8 +40,8 @@ namespace LogicSimulator.ViewModels {
     public class MainWindowViewModel: ViewModelBase, INotifyPropertyChanged {
         private string log = "";
         public string Logg { get => log; set {
-                // this.RaiseAndSetIfChanged(ref log, value); Почему-то сломался из-за добавления INotifyPropertyChanged
-                if (log == value) return;
+            // this.RaiseAndSetIfChanged(ref log, value); Почему-то сломался из-за добавления INotifyPropertyChanged
+            if (log == value) return;
             log = value;
             PropertyChanged?.Invoke(this, new(nameof(Logg)));
         } }
@@ -59,10 +60,12 @@ namespace LogicSimulator.ViewModels {
         }
 
         private Window? mw;
+        private Canvas? canv;
         public void AddWindow(Window window) {
             var canv = window.Find<Canvas>("Canvas");
 
             mw = window;
+            this.canv = canv;
             if (canv == null) return; // Такого не бывает
 
             canv.Children.Add(map.Marker);
@@ -162,6 +165,10 @@ namespace LogicSimulator.ViewModels {
 #pragma warning restore CS0108
         public void Update() {
             Log.Write("Текущий проект:\n" + current_proj);
+
+            if (current_scheme == null || canv == null) throw new Exception("Такого не бывает");
+            map.ImportScheme(current_scheme, canv);
+
             PropertyChanged?.Invoke(this, new(nameof(ProjName)));
             PropertyChanged?.Invoke(this, new(nameof(Schemes)));
         }

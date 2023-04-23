@@ -30,5 +30,6 @@ namespace LogicSimulator.Views.Shapes {
         public int TypeId { get; }
         public object Export();
         public List<object[]> ExportJoins(Dictionary<IGate, int> to_num);
+        public void Import(Dictionary<string, object> dict);
     }
 }

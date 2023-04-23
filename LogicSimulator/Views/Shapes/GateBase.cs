@@ -4,6 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Threading;
 using LogicSimulator.Models;
+using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -228,7 +229,7 @@ namespace LogicSimulator.Views.Shapes {
             return new Dictionary<string, object> {
                 ["id"] = TypeId,
                 ["pos"] = GetPos(),
-                ["size"] = GetSize()
+                ["size"] = GetBodySize()
             };
         }
 
@@ -245,6 +246,16 @@ namespace LogicSimulator.Views.Shapes {
                 });
             }
             return res;
+        }
+
+        public virtual void Import(Dictionary<string, object> dict) {
+            if (!@dict.TryGetValue("pos", out var @value)) { Log.Write("pos-запись элемента не обнаружен"); return; }
+            if (@value is not Point @pos) { Log.Write("Неверный тип pos-записи элемента: " + @value); return; }
+            Move(@pos);
+
+            if (!@dict.TryGetValue("size", out var @value2)) { Log.Write("size-запись элемента не обнаружен"); return; }
+            if (@value2 is not Size @size) { Log.Write("Неверный тип size-записи элемента: " + @value2); return; }
+            Resize(@size, false);
         }
     }
 }

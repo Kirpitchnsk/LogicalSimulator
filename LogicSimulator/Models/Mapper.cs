@@ -10,7 +10,6 @@ using Avalonia.Media;
 using Avalonia.LogicalTree;
 using System.Linq;
 using Button = LogicSimulator.Views.Shapes.Button;
-using System.Collections;
 
 namespace LogicSimulator.Models {
     public class Mapper {
@@ -65,6 +64,12 @@ namespace LogicSimulator.Models {
         public void RemoveItem(IGate item) {
             items.Remove(item);
             sim.RemoveItem(item);
+
+            item.ClearJoins();
+            ((Control) item).Remove();
+        }
+        public void RemoveAll() {
+            foreach (var item in items.ToArray()) RemoveItem(item);
         }
 
         /*
@@ -327,11 +332,7 @@ namespace LogicSimulator.Models {
             // Log.Write("Tapped: " + item.GetType().Name + " pos: " + pos);
             tap_pos = pos;
 
-            if (mode == 4 && moved_item != null) {
-                RemoveItem(moved_item);
-                moved_item.ClearJoins();
-                ((Control) moved_item).Remove();
-            }
+            if (mode == 4 && moved_item != null) RemoveItem(moved_item);
         }
 
         public void WheelMove(Control item, double move) {
@@ -361,6 +362,22 @@ namespace LogicSimulator.Models {
             Log.Write("Items: " + Utils.Obj2json(arr));
             Log.Write("Joins: " + Utils.Obj2json(joins));
             Log.Write("States: " + Utils.Obj2json(states));
+        }
+
+        public void ImportScheme(Scheme current_scheme, Canvas canv) {
+            RemoveAll();
+            
+            foreach (var item in current_scheme.items) {
+                if (item is not Dictionary<string, object> @dict) { Log.Write("Не верный тип элемента: " + item); continue; }
+
+                if (!@dict.TryGetValue("id", out var @value)) { Log.Write("id элемента не обнаружен"); continue; }
+                if (@value is not int @id) { Log.Write("Неверный тип id: " + @value); continue; }
+                var newy = CreateItem(@id);
+
+                newy.Import(@dict);
+                AddItem(newy);
+                canv.Children.Add(newy.GetSelf());
+            }
         }
     }
 }
