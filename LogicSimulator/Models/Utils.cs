@@ -59,6 +59,7 @@ namespace LogicSimulator.Models {
             case double @double: return @double.ToString().Replace(',', '.');
 
             case Point @point: return "\"$p$" + (int) @point.X + "," + (int) @point.Y + '"';
+            case Size @size: return "\"$s$" + (int) @size.Width + "," + (int) @size.Height + '"';
             case Points @points: return "\"$P$" + string.Join("|", @points.Select(p => (int) p.X + "," + (int) p.Y)) + '"';
             case SolidColorBrush @color: return "\"$C$" + @color.Color + '"';
             case Thickness @thickness: return "\"$T$" + @thickness.Left + "," + @thickness.Top + "," + @thickness.Right + "," + @thickness.Bottom + '"';
@@ -94,7 +95,8 @@ namespace LogicSimulator.Models {
             string data = str[3..];
             string[] thick = str[1] == 'T' ? data.Split(',') : System.Array.Empty<string>();
             return str[1] switch {
-                // 'p' => new SafePoint(data).Point,
+                'p' => Point.Parse(data),
+                's' => Size.Parse(data),
                 // 'P' => new SafePoints(data.Replace('|', ' ')).Points,
                 'C' => new SolidColorBrush(Color.Parse(data)),
                 'T' => new Thickness(double.Parse(thick[0]), double.Parse(thick[1]), double.Parse(thick[2]), double.Parse(thick[3])),
@@ -564,6 +566,7 @@ namespace LogicSimulator.Models {
         }
         public static string Yaml2json(string yaml) {
             try {
+                yaml = yaml.Replace("\r", "");
                 if (!yaml.StartsWith("---\n")) throw new Exception("Это не YAML");
                 int pos = 4;
                 var res = YAML_ToJSONHandler(ref yaml, ref pos);
@@ -674,6 +677,15 @@ namespace LogicSimulator.Models {
             if (tb2 == null) return res; // Обычно так не бывает
             var bounds2 = tb2.Value.Bounds.TransformToAABB(tb2.Value.Transform);
             return res - bounds2.TopLeft;
+        }
+
+        public static DateTime UnixTimeStampToDateTime(this long unixTimeStamp) {
+            DateTime dateTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+            return dateTime;
+        }
+        public static string UnixTimeStampToString(this long unixTimeStamp) {
+            return UnixTimeStampToDateTime(unixTimeStamp).ToString("yyyy/MM/dd H:mm:ss");
         }
         
         /*

@@ -13,12 +13,29 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
+	<Window.Styles>
+		<Style Selector="ListBoxItem">
+			<Setter Property="Padding" Value="0"/>
+		</Style>
+		<Style Selector="Border.b">
+			<Setter Property="BorderThickness" Value="2"/>
+			<Setter Property="BorderBrush" Value="#0d8"/>
+			<Setter Property="CornerRadius" Value="5"/>
+			<Setter Property="Padding" Value="6"/>
+		</Style>
+		<Style Selector="TextBox">
+			<Setter Property="Margin" Value="-5"/>
+			<Setter Property="Padding" Value="4"/>
+			<Setter Property="MinHeight" Value="0"/>
+		</Style>
+	</Window.Styles>
+
 	<DockPanel>
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="Файл">
 				<MenuItem Header="Создать" Command="{Binding Comm}" CommandParameter="Create"/>
-				<MenuItem Header="Открыть" Command="{Binding Comm}" CommandParameter="Open"/>
-				<MenuItem Header="Сохранить" Command="{Binding Comm}" CommandParameter="Save"/>
+				<MenuItem Header="Открыть проект" Command="{Binding Comm}" CommandParameter="Open"/>
+				<MenuItem Header="Сохранить текущую схему" Command="{Binding Comm}" CommandParameter="Save"/>
 				<MenuItem Header="Выйти" Command="{Binding Comm}" CommandParameter="Exit"/>
 			</MenuItem>
 		</Menu>
@@ -34,7 +51,20 @@
 				<TextBlock Text="{Binding Logg}" Background="AliceBlue"/>
 				<Canvas Tag="Scene" Name="Canvas" Background="#0000"/>
 			</Panel>
-			<ListBox Grid.Column="2"></ListBox>
+			<Grid Grid.Column="2" RowDefinitions="auto,*" DoubleTapped="DTapped">
+				<Border Classes="b" BorderBrush="#4df" Background="#0000">
+					<TextBlock Tag="p_name" Text="{Binding ProjName}"/>
+				</Border>
+				<ListBox Grid.Row="1" Padding="10 4 0 0" Items="{Binding Schemes}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Border Classes="b">
+								<TextBlock Text="{Binding}" Tag="{Binding}"/>
+							</Border>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Grid>
 		</Grid>
 	</DockPanel>
 </Window>

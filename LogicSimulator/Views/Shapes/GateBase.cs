@@ -4,6 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Threading;
 using LogicSimulator.Models;
+using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,7 +39,7 @@ namespace LogicSimulator.Views.Shapes {
 
         public void Resize(Size size, bool global) {
             double limit = (9 + 32) * 2;
-            width = size.Width.Max(limit);
+            width = size.Width.Max(limit / 3 * (CountIns == 0 || CountOuts == 0 ? 2.25 : 3));
             height = size.Height.Max(limit / 3 * (1.5 + 0.75 * CountIns.Max(CountOuts)));
             RecalcSizes();
             UpdateJoins(global);
@@ -120,6 +121,8 @@ namespace LogicSimulator.Views.Shapes {
             PropertyChanged?.Invoke(this, new(nameof(UC_Height)));
             PropertyChanged?.Invoke(this, new(nameof(FontSizze)));
             PropertyChanged?.Invoke(this, new(nameof(ImageMargins)));
+
+            PropertyChanged?.Invoke(this, new("ButtonSize"));
         }
 
         /*
@@ -214,6 +217,45 @@ namespace LogicSimulator.Views.Shapes {
                     }
                 }
             }
+        }
+
+        /*
+         * Экспорт, но может быть прокачан в дочернем классе, если есть что добавить
+         */
+
+        public abstract int TypeId { get; }
+
+        public virtual object Export() {
+            return new Dictionary<string, object> {
+                ["id"] = TypeId,
+                ["pos"] = GetPos(),
+                ["size"] = GetBodySize()
+            };
+        }
+
+        public List<object[]> ExportJoins(Dictionary<IGate, int> to_num) {
+            List<object[]> res = new();
+            int n = 0, ins = CountIns;
+            foreach (var join in joins) {
+                if (++n > ins) break;
+                if (join == null) continue;
+                Distantor a = join.A, b = join.B;
+                res.Add(new object[] {
+                    to_num[a.parent], a.num, a.tag,
+                    to_num[b.parent], b.num, b.tag,
+                });
+            }
+            return res;
+        }
+
+        public virtual void Import(Dictionary<string, object> dict) {
+            if (!@dict.TryGetValue("pos", out var @value)) { Log.Write("pos-запись элемента не обнаружен"); return; }
+            if (@value is not Point @pos) { Log.Write("Неверный тип pos-записи элемента: " + @value); return; }
+            Move(@pos);
+
+            if (!@dict.TryGetValue("size", out var @value2)) { Log.Write("size-запись элемента не обнаружен"); return; }
+            if (@value2 is not Size @size) { Log.Write("Неверный тип size-записи элемента: " + @value2); return; }
+            Resize(@size, false);
         }
     }
 }

@@ -30,6 +30,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\LauncherWindow.axaml.cs">
+      <DependentUpon>LauncherWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Shapes\Button.axaml.cs">
+      <DependentUpon>Button.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Shapes\LightBulb.axaml.cs">
+      <DependentUpon>LightBulb.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Shapes\Switch.axaml.cs">
+      <DependentUpon>Switch.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Shapes\SuM.axaml.cs">
       <DependentUpon>SuM.axaml</DependentUpon>
     </Compile>

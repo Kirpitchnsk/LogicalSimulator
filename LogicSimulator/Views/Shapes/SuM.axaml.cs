@@ -4,6 +4,8 @@ using System.ComponentModel;
 
 namespace LogicSimulator.Views.Shapes {
     public partial class SuM: GateBase, IGate, INotifyPropertyChanged {
+        public override int TypeId => 4;
+
         public override int CountIns => 2;
         public override int CountOuts => 2;
         public override UserControl GetSelf() => this;

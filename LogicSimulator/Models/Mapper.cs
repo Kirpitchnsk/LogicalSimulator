@@ -8,6 +8,10 @@ using DynamicData;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.LogicalTree;
+using System.Linq;
+using Button = LogicSimulator.Views.Shapes.Button;
+using System.Threading.Tasks;
+using Avalonia.Threading;
 
 namespace LogicSimulator.Models {
     public class Mapper {
@@ -30,6 +34,9 @@ namespace LogicSimulator.Models {
                 2 => new NOT(),
                 3 => new XOR_2(),
                 4 => new SuM(),
+                5 => new Switch(),
+                6 => new Button(),
+                7 => new LightBulb(),
                 _ => new AND_2(),
             };
         }
@@ -40,6 +47,9 @@ namespace LogicSimulator.Models {
             CreateItem(2),
             CreateItem(3),
             CreateItem(4),
+            CreateItem(5),
+            CreateItem(6),
+            CreateItem(7),
         };
 
         public IGate GenSelectedItem() => CreateItem(selected_item);
@@ -56,6 +66,12 @@ namespace LogicSimulator.Models {
         public void RemoveItem(IGate item) {
             items.Remove(item);
             sim.RemoveItem(item);
+
+            item.ClearJoins();
+            ((Control) item).Remove();
+        }
+        public void RemoveAll() {
+            foreach (var item in items.ToArray()) RemoveItem(item);
         }
 
         /*
@@ -132,7 +148,7 @@ namespace LogicSimulator.Models {
             // Log.Write("PointerPressed: " + item.GetType().Name + " pos: " + pos);
 
             UpdateMode(item);
-            Log.Write("new_mode: " + mode);
+            // Log.Write("new_mode: " + mode);
 
             moved_pos = pos;
             moved_item = GetGate(item);
@@ -318,15 +334,79 @@ namespace LogicSimulator.Models {
             // Log.Write("Tapped: " + item.GetType().Name + " pos: " + pos);
             tap_pos = pos;
 
-            if (mode == 4 && moved_item != null) {
-                RemoveItem(moved_item);
-                moved_item.ClearJoins();
-                ((Control) moved_item).Remove();
-            }
+            if (mode == 4 && moved_item != null) RemoveItem(moved_item);
         }
 
         public void WheelMove(Control item, double move) {
             // Log.Write("WheelMoved: " + item.GetType().Name + " delta: " + (move > 0 ? 1 : -1));
+        }
+
+        /*
+         * Экспорт и импорт
+         */
+
+        public readonly FileHandler filer = new();
+
+        public void Export(Scheme current_scheme) {
+            var arr = items.Select(x => x.Export()).ToArray();
+
+            Dictionary<IGate, int> item_to_num = new();
+            int n = 0;
+            foreach (var item in items) item_to_num.Add(item, n++);
+            List<object[]> joins = new();
+            foreach (var item in items) joins.Add(item.ExportJoins(item_to_num));
+
+            bool[] states = sim.Export();
+
+            try { current_scheme.Update(arr, joins.ToArray(), states); }
+            catch (Exception e) { Log.Write("Save error:\n" + e); }
+
+            Log.Write("Items: " + Utils.Obj2json(arr));
+            Log.Write("Joins: " + Utils.Obj2json(joins));
+            Log.Write("States: " + Utils.Obj2json(states));
+        }
+
+        public void ImportScheme(Scheme current_scheme, Canvas canv) {
+            sim.lock_sim = true;
+
+            RemoveAll();
+
+            List<IGate> list = new();
+            foreach (var item in current_scheme.items) {
+                if (item is not Dictionary<string, object> @dict) { Log.Write("Не верный тип элемента: " + item); continue; }
+
+                if (!@dict.TryGetValue("id", out var @value)) { Log.Write("id элемента не обнаружен"); continue; }
+                if (@value is not int @id) { Log.Write("Неверный тип id: " + @value); continue; }
+                var newy = CreateItem(@id);
+
+                newy.Import(@dict);
+                AddItem(newy);
+                canv.Children.Add(newy.GetSelf());
+                list.Add(newy);
+            }
+            var items_arr = list.ToArray();
+
+            List<JoinedItems> joinz = new();
+            foreach (var obj in current_scheme.joins) {
+                if (obj is not List<object> @join) { Log.Write("Одно из соединений не того типа: " + obj); continue; }
+                if (@join.Count != 6 ||
+                    @join[0] is not int @num_a || @join[1] is not int @pin_a || @join[2] is not string @tag_a ||
+                    @join[3] is not int @num_b || @join[4] is not int @pin_b || @join[5] is not string @tag_b) { Log.Write("Содержимое списка соединения ошибочно"); continue; }
+
+                var newy = new JoinedItems(new(items_arr[@num_a], @pin_a, canv, tag_a), new(items_arr[@num_b], @pin_b, canv, tag_b));
+                canv.Children.Add(newy.line);
+                joinz.Add(newy);
+            }
+
+            sim.Import(current_scheme.states);
+            sim.lock_sim = false;
+
+            Task.Run(async () => { // Временный багофикс невидимых линий соединения из-за специфики высчета центров кругов под копотом XD
+                await Task.Delay(50);
+                await Dispatcher.UIThread.InvokeAsync(() => {
+                    foreach (var join in joinz) join.Update();
+                });
+            });
         }
     }
 }
