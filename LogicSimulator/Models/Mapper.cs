@@ -9,6 +9,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.LogicalTree;
 using System.Linq;
+using Button = LogicSimulator.Views.Shapes.Button;
 
 namespace LogicSimulator.Models {
     public class Mapper {
@@ -31,6 +32,9 @@ namespace LogicSimulator.Models {
                 2 => new NOT(),
                 3 => new XOR_2(),
                 4 => new SuM(),
+                5 => new Switch(),
+                6 => new Button(),
+                7 => new LightBulb(),
                 _ => new AND_2(),
             };
         }
@@ -41,6 +45,9 @@ namespace LogicSimulator.Models {
             CreateItem(2),
             CreateItem(3),
             CreateItem(4),
+            CreateItem(5),
+            CreateItem(6),
+            CreateItem(7),
         };
 
         public IGate GenSelectedItem() => CreateItem(selected_item);
@@ -133,7 +140,7 @@ namespace LogicSimulator.Models {
             // Log.Write("PointerPressed: " + item.GetType().Name + " pos: " + pos);
 
             UpdateMode(item);
-            Log.Write("new_mode: " + mode);
+            // Log.Write("new_mode: " + mode);
 
             moved_pos = pos;
             moved_item = GetGate(item);

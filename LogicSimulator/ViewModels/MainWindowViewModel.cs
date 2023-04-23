@@ -104,6 +104,7 @@ namespace LogicSimulator.ViewModels {
         Border? cur_border;
         TextBlock? old_b_child;
         object? old_b_child_tag;
+        string? prev_scheme_name;
 
         public static string ProjName { get => current_proj == null ? "???" : current_proj.Name; }
 
@@ -126,6 +127,7 @@ namespace LogicSimulator.ViewModels {
             cur_border = b;
             old_b_child = tb;
             old_b_child_tag = tb.Tag;
+            prev_scheme_name = tb.Text;
 
             var newy = new TextBox { Text = tb.Text }; // Изи блиц-транcформация в одну строчку ;'-}
             
@@ -135,9 +137,13 @@ namespace LogicSimulator.ViewModels {
             
             newy.KeyUp += (object? sender, KeyEventArgs e) => {
                 if (e.Key != Key.Return) return;
-                // tb.Text = newy.Text;
-                if ((string?) tb.Tag == "p_name") current_proj?.ChangeName(newy.Text);
-                else if (old_b_child_tag is Scheme scheme) scheme.ChangeName(newy.Text);
+
+                if (newy.Text != prev_scheme_name) {
+                    // tb.Text = newy.Text;
+                    if ((string?) tb.Tag == "p_name") current_proj?.ChangeName(newy.Text);
+                    else if (old_b_child_tag is Scheme scheme) scheme.ChangeName(newy.Text);
+                }
+
                 b.Child = tb;
                 cur_border = null; old_b_child = null;
 

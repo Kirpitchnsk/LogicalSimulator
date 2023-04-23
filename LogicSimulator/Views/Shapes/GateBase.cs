@@ -38,7 +38,7 @@ namespace LogicSimulator.Views.Shapes {
 
         public void Resize(Size size, bool global) {
             double limit = (9 + 32) * 2;
-            width = size.Width.Max(limit);
+            width = size.Width.Max(limit / 3 * (CountIns == 0 || CountOuts == 0 ? 2.25 : 3));
             height = size.Height.Max(limit / 3 * (1.5 + 0.75 * CountIns.Max(CountOuts)));
             RecalcSizes();
             UpdateJoins(global);
@@ -120,6 +120,8 @@ namespace LogicSimulator.Views.Shapes {
             PropertyChanged?.Invoke(this, new(nameof(UC_Height)));
             PropertyChanged?.Invoke(this, new(nameof(FontSizze)));
             PropertyChanged?.Invoke(this, new(nameof(ImageMargins)));
+
+            PropertyChanged?.Invoke(this, new("ButtonSize"));
         }
 
         /*
@@ -222,7 +224,7 @@ namespace LogicSimulator.Views.Shapes {
 
         public abstract int TypeId { get; }
 
-        public object Export() {
+        public virtual object Export() {
             return new Dictionary<string, object> {
                 ["id"] = TypeId,
                 ["pos"] = GetPos(),

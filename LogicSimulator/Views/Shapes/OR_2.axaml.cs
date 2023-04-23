@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace LogicSimulator.Views.Shapes {
     public partial class OR_2: GateBase, IGate, INotifyPropertyChanged {
-        public override int TypeId => 2;
+        public override int TypeId => 1;
 
         public override int CountIns => 2;
         public override int CountOuts => 1;

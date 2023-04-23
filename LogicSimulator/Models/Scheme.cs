@@ -13,7 +13,7 @@ namespace LogicSimulator.Models {
         public bool[] states;
 
         public string FileName { get; }
-        private Project parent;
+        private readonly Project parent;
 
         public Scheme(Project p) { // Новая схема
             Created = Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();

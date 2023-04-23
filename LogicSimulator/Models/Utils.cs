@@ -566,6 +566,7 @@ namespace LogicSimulator.Models {
         }
         public static string Yaml2json(string yaml) {
             try {
+                yaml = yaml.Replace("\r", "");
                 if (!yaml.StartsWith("---\n")) throw new Exception("Это не YAML");
                 int pos = 4;
                 var res = YAML_ToJSONHandler(ref yaml, ref pos);
