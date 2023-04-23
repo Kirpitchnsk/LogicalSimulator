@@ -38,7 +38,12 @@ namespace LogicSimulator.ViewModels {
 
     public class MainWindowViewModel: ViewModelBase, INotifyPropertyChanged {
         private string log = "";
-        public string Logg { get => log; set => this.RaiseAndSetIfChanged(ref log, value); }
+        public string Logg { get => log; set {
+                // this.RaiseAndSetIfChanged(ref log, value); Почему-то сломался из-за добавления INotifyPropertyChanged
+                if (log == value) return;
+            log = value;
+            PropertyChanged?.Invoke(this, new(nameof(Logg)));
+        } }
 
         public MainWindowViewModel() { // Если я буду Window mw передавать через этот конструктор, то предварительный просмотр снова порвёт смачно XD
             Log.Mwvm = this;
