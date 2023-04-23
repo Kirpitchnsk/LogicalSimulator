@@ -241,8 +241,8 @@ namespace LogicSimulator.Views.Shapes {
                 if (join == null) continue;
                 Distantor a = join.A, b = join.B;
                 res.Add(new object[] {
-                    to_num[a.parent], a.num,
-                    to_num[b.parent], b.num
+                    to_num[a.parent], a.num, a.tag,
+                    to_num[b.parent], b.num, b.tag,
                 });
             }
             return res;

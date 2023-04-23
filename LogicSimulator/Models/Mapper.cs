@@ -10,6 +10,8 @@ using Avalonia.Media;
 using Avalonia.LogicalTree;
 using System.Linq;
 using Button = LogicSimulator.Views.Shapes.Button;
+using System.Threading.Tasks;
+using Avalonia.Threading;
 
 namespace LogicSimulator.Models {
     public class Mapper {
@@ -365,8 +367,11 @@ namespace LogicSimulator.Models {
         }
 
         public void ImportScheme(Scheme current_scheme, Canvas canv) {
+            sim.lock_sim = true;
+
             RemoveAll();
-            
+
+            List<IGate> list = new();
             foreach (var item in current_scheme.items) {
                 if (item is not Dictionary<string, object> @dict) { Log.Write("Не верный тип элемента: " + item); continue; }
 
@@ -377,7 +382,31 @@ namespace LogicSimulator.Models {
                 newy.Import(@dict);
                 AddItem(newy);
                 canv.Children.Add(newy.GetSelf());
+                list.Add(newy);
             }
+            var items_arr = list.ToArray();
+
+            List<JoinedItems> joinz = new();
+            foreach (var obj in current_scheme.joins) {
+                if (obj is not List<object> @join) { Log.Write("Одно из соединений не того типа: " + obj); continue; }
+                if (@join.Count != 6 ||
+                    @join[0] is not int @num_a || @join[1] is not int @pin_a || @join[2] is not string @tag_a ||
+                    @join[3] is not int @num_b || @join[4] is not int @pin_b || @join[5] is not string @tag_b) { Log.Write("Содержимое списка соединения ошибочно"); continue; }
+
+                var newy = new JoinedItems(new(items_arr[@num_a], @pin_a, canv, tag_a), new(items_arr[@num_b], @pin_b, canv, tag_b));
+                canv.Children.Add(newy.line);
+                joinz.Add(newy);
+            }
+
+            sim.Import(current_scheme.states);
+            sim.lock_sim = false;
+
+            Task.Run(async () => { // Временный багофикс невидимых линий соединения из-за специфики высчета центров кругов под копотом XD
+                await Task.Delay(50);
+                await Dispatcher.UIThread.InvokeAsync(() => {
+                    foreach (var join in joinz) join.Update();
+                });
+            });
         }
     }
 }

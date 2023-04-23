@@ -28,10 +28,12 @@ namespace LogicSimulator.Models {
 
 
     public class Simulator {
+        public bool lock_sim = false;
         public Simulator() {
             var task = Task.Run(async () => {
                 for (;;) {
-                    await Task.Delay(1000 / 60); // Повышааааааееееем оборооооооотыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыы!!! 60 герц...
+                    await Task.Delay(1000 / 1000); // Повышааааааееееем оборооооооотыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыы!!! 60 герц... Нет, все 1000! ;'-}
+                    if (lock_sim) continue;
                     try { Tick(); }
                     catch (Exception e) { Log.Write("Logical crush: " + e); break; }
                 }
@@ -90,5 +92,9 @@ namespace LogicSimulator.Models {
         }
 
         public bool[] Export() => outs.ToArray();
+        public void Import(bool[] state) {
+            outs = state.ToList();
+            outs2 = Enumerable.Repeat(false, state.Length).ToList();
+        }
     }
 }
