@@ -13,6 +13,23 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
+	<Window.Styles>
+		<Style Selector="ListBoxItem">
+			<Setter Property="Padding" Value="0"/>
+		</Style>
+		<Style Selector="Border.b">
+			<Setter Property="BorderThickness" Value="2"/>
+			<Setter Property="BorderBrush" Value="#0d8"/>
+			<Setter Property="CornerRadius" Value="5"/>
+			<Setter Property="Padding" Value="6"/>
+		</Style>
+		<Style Selector="TextBox">
+			<Setter Property="Margin" Value="-5"/>
+			<Setter Property="Padding" Value="4"/>
+			<Setter Property="MinHeight" Value="0"/>
+		</Style>
+	</Window.Styles>
+
 	<DockPanel>
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="Файл">
@@ -34,7 +51,22 @@
 				<TextBlock Text="{Binding Logg}" Background="AliceBlue"/>
 				<Canvas Tag="Scene" Name="Canvas" Background="#0000"/>
 			</Panel>
-			<ListBox Grid.Column="2"></ListBox>
+			<Grid Grid.Column="2" RowDefinitions="auto,*" DoubleTapped="DTapped">
+				<Border Classes="b" BorderBrush="#4df">
+					<TextBlock>Название проекта</TextBlock>
+				</Border>
+				<ListBox Grid.Row="1" Padding="10 4 0 0">
+					<Border Classes="b">
+						<TextBlock>Название схемы</TextBlock>
+					</Border>
+					<Border Classes="b">
+						<TextBlock>Название схемы</TextBlock>
+					</Border>
+					<Border Classes="b">
+						<TextBlock>Название схемы</TextBlock>
+					</Border>
+				</ListBox>
+			</Grid>
 		</Grid>
 	</DockPanel>
 </Window>

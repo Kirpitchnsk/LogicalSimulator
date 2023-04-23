@@ -89,5 +89,29 @@ namespace LogicSimulator.ViewModels {
 
         public IGate[] ItemTypes { get => map.item_types; }
         public int SelectedItem { get => map.SelectedItem; set => map.SelectedItem = value; }
+
+        /*
+         * Обработка той самой панели со схемами проекта
+         */
+
+        public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+            var src = (Control?) e.Source;
+            if (src is not TextBlock tb) return;
+
+            var p = tb.Parent;
+            if (p == null || p is not Border b) return;
+
+            var newy = new TextBox { Text = tb.Text }; // Транcформация в одну строчку ;'-}
+            b.Child = newy;
+            newy.KeyUp += (object? sender, KeyEventArgs e) => {
+                if (e.Key != Key.Return) return;
+                tb.Text = newy.Text;
+                b.Child = tb;
+            };
+        }
+
+        private void Newy_KeyUp(object? sender, KeyEventArgs e) {
+            Log.Write("Newy_KeyUp: " + (e.Key == Key.Return));
+        }
     }
 }

@@ -3,11 +3,17 @@ using LogicSimulator.ViewModels;
 
 namespace LogicSimulator.Views {
     public partial class MainWindow: Window {
+        MainWindowViewModel mwvm;
+
         public MainWindow() {
             InitializeComponent();
-            var mwvm = new MainWindowViewModel();
+            mwvm = new MainWindowViewModel();
             DataContext = mwvm;
             mwvm.AddWindow(this);
+        }
+
+        public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+            mwvm.DTapped(sender, e);
         }
     }
 }
