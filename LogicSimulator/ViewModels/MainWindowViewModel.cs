@@ -14,7 +14,7 @@ namespace LogicSimulator.ViewModels {
         static readonly string path = "../../../Log.txt";
         static bool first = true;
 
-        static readonly bool use_file = true;
+        static readonly bool use_file = false;
 
         public static MainWindowViewModel? Mwvm { private get; set; }
         public static void Write(string message, bool without_update = false) {
@@ -103,6 +103,9 @@ namespace LogicSimulator.ViewModels {
 
         Border? cur_border;
         TextBlock? old_b_child;
+
+        public static string ProjName { get => current_proj == null ? "???" : current_proj.Name; }
+
         readonly ObservableCollection<string> schemes = new() { "scheme_1", "scheme_lol", "scheme_boom" };
 
         public ObservableCollection<string> Schemes { get => schemes; }
@@ -128,7 +131,9 @@ namespace LogicSimulator.ViewModels {
             b.Child = newy;
             newy.KeyUp += (object? sender, KeyEventArgs e) => {
                 if (e.Key != Key.Return) return;
-                tb.Text = newy.Text;
+                // tb.Text = newy.Text;
+                if ((string?) tb.Tag == "p_name") current_proj?.ChangeName(newy.Text);
+
                 b.Child = tb;
                 cur_border = null; old_b_child = null;
 

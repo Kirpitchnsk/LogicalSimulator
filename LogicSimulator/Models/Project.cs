@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace LogicSimulator.Models {
     public class Project: IComparable {
-        public string Name { get; set; }
+        public string Name { get; private set; }
         public long Created;
         public long Modified;
 
@@ -90,6 +90,12 @@ namespace LogicSimulator.Models {
 
         public override string ToString() {
             return Name + "\nИзменён: " + Modified.UnixTimeStampToString() + "\nСоздан: " + Created.UnixTimeStampToString();
+        }
+
+        internal void ChangeName(string name) {
+            Name = name;
+            Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            Save();
         }
     }
 }
