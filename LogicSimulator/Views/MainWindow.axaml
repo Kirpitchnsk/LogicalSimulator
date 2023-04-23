@@ -52,7 +52,7 @@
 				<Canvas Tag="Scene" Name="Canvas" Background="#0000"/>
 			</Panel>
 			<Grid Grid.Column="2" RowDefinitions="auto,*" DoubleTapped="DTapped">
-				<Border Classes="b" BorderBrush="#4df">
+				<Border Classes="b" BorderBrush="#4df" Background="#0000">
 					<TextBlock>Название проекта</TextBlock>
 				</Border>
 				<ListBox Grid.Row="1" Padding="10 4 0 0">

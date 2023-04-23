@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using LogicSimulator.Models;
 using LogicSimulator.Views.Shapes;
@@ -94,12 +95,23 @@ namespace LogicSimulator.ViewModels {
          * Обработка той самой панели со схемами проекта
          */
 
+        Border? cur_border;
+        TextBlock? old_b_child;
+
         public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
             var src = (Control?) e.Source;
+
+            if (src is ContentPresenter cp && cp.Child is Border bord) src = bord;
+            if (src is Border bord2 && bord2.Child is TextBlock tb2) src = tb2;
+
             if (src is not TextBlock tb) return;
 
             var p = tb.Parent;
             if (p == null || p is not Border b) return;
+
+            if (cur_border != null && old_b_child != null) cur_border.Child = old_b_child;
+            cur_border = b;
+            old_b_child = tb;
 
             var newy = new TextBox { Text = tb.Text }; // Транcформация в одну строчку ;'-}
             b.Child = newy;
@@ -107,6 +119,7 @@ namespace LogicSimulator.ViewModels {
                 if (e.Key != Key.Return) return;
                 tb.Text = newy.Text;
                 b.Child = tb;
+                cur_border = null; old_b_child = null;
             };
         }
 
