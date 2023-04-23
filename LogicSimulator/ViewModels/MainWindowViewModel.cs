@@ -2,17 +2,19 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
-using LogicSimulator.Models;
 using LogicSimulator.Views.Shapes;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 
 namespace LogicSimulator.ViewModels {
     public class Log {
         static readonly List<string> logs = new();
-        // static readonly string path = "../../../Log.txt";
-        // static bool first = true;
+        static readonly string path = "../../../Log.txt";
+        static bool first = true;
+
+        static readonly bool use_file = true;
 
         public static MainWindowViewModel? Mwvm { private get; set; }
         public static void Write(string message, bool without_update = false) {
@@ -23,9 +25,11 @@ namespace LogicSimulator.ViewModels {
                 if (Mwvm != null) Mwvm.Logg = string.Join('\n', logs);
             }
 
-            // if (first) File.WriteAllText(path, message + "\n");
-            // else File.AppendAllText(path, message + "\n");
-            // first = false;
+            if (use_file) {
+                if (first) File.WriteAllText(path, message + "\n");
+                else File.AppendAllText(path, message + "\n");
+                first = false;
+            }
         }
     }
 
@@ -86,6 +90,8 @@ namespace LogicSimulator.ViewModels {
             panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) => {
                 if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y);
             };
+
+            Log.Write("Текущий проект:\n" + current_proj);
         }
 
         public static IGate[] ItemTypes { get => map.item_types; }

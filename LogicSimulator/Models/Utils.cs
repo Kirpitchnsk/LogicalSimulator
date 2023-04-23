@@ -677,6 +677,15 @@ namespace LogicSimulator.Models {
             var bounds2 = tb2.Value.Bounds.TransformToAABB(tb2.Value.Transform);
             return res - bounds2.TopLeft;
         }
+
+        public static DateTime UnixTimeStampToDateTime(this long unixTimeStamp) {
+            DateTime dateTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+            return dateTime;
+        }
+        public static string UnixTimeStampToString(this long unixTimeStamp) {
+            return UnixTimeStampToDateTime(unixTimeStamp).ToString("yyyy/mm/dd H:mm:ss");
+        }
         
         /*
          * SQLite_proj_list абилка

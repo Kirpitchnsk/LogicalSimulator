@@ -1,3 +1,5 @@
+using LogicSimulator.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -9,9 +11,10 @@ namespace LogicSimulator.Models {
 
         public FileHandler() {
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
-            foreach (var name in Directory.GetFiles(dir))
+            foreach (var fullname in Directory.EnumerateFiles(dir)) {
+                var name = fullname.Split("/")[^1];
                 if (name.StartsWith("proj_")) LoadProject(name);
+            }
         }
 
 
@@ -38,16 +41,22 @@ namespace LogicSimulator.Models {
             projects.Add(proj);
             return proj;
         }
-        private Project LoadProject(string fileName) {
-            var obj = Utils.Yaml2obj(File.ReadAllText(dir + fileName)) ?? throw new DataException("Не верная структура YAML-файла проекта!");
-            var proj = new Project(fileName, obj);
-            projects.Add(proj);
-            return proj;
+        private Project? LoadProject(string fileName) {
+            try {
+                var obj = Utils.Yaml2obj(File.ReadAllText(dir + fileName)) ?? throw new DataException("Не верная структура YAML-файла проекта!");
+                var proj = new Project(fileName, obj);
+                projects.Add(proj);
+                return proj;
+            } catch (Exception e) { Log.Write("Неудачная попытка загрузить проект:\n" + e); }
+            return null;
         }
-        public static Scheme LoadScheme(string fileName) {
-            var obj = Utils.Yaml2obj(File.ReadAllText(dir + fileName)) ?? throw new DataException("Не верная структура XML-файла схемы!");
-            var scheme = new Scheme(fileName, obj);
-            return scheme;
+        public static Scheme? LoadScheme(string fileName) {
+            try {
+                var obj = Utils.Xml2obj(File.ReadAllText(dir + fileName)) ?? throw new DataException("Не верная структура XML-файла схемы!");
+                var scheme = new Scheme(fileName, obj);
+                return scheme;
+            } catch (Exception e) { Log.Write("Неудачная попытка загрузить схему:\n" + e); }
+            return null;
         }
 
 
@@ -59,6 +68,11 @@ namespace LogicSimulator.Models {
         public static void SaveScheme(Scheme scheme) {
             var data = Utils.Obj2xml(scheme.Export());
             File.WriteAllText(dir + scheme.FileName, data);
+        }
+
+        public Project[] GetSortedProjects() {
+            projects.Sort();
+            return projects.ToArray();
         }
     }
 }

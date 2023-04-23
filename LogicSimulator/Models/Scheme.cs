@@ -1,6 +1,7 @@
 ﻿using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LogicSimulator.Models {
     public class Scheme {
@@ -24,36 +25,32 @@ namespace LogicSimulator.Models {
 
         public Scheme(string fileName, object data) { // Импорт
             FileName = fileName;
-            Name = "?";
-            Created = Modified = -1;
-            items = joins = Array.Empty<object>();
-            states = Array.Empty<bool>();
 
-            if (data is not Dictionary<string, object> dict) { Log.Write("Ожидался словарь в корне схемы"); return; }
+            if (data is not Dictionary<string, object> dict) throw new Exception("Ожидался словарь в корне схемы");
 
-            if (!dict.TryGetValue("name", out var value)) { Log.Write("В схеме нет имени"); return; }
-            if (value is not string name) { Log.Write("Тип имени схемы - не строка"); return; }
+            if (!dict.TryGetValue("name", out var value)) throw new Exception("В схеме нет имени");
+            if (value is not string name) throw new Exception("Тип имени схемы - не строка");
             Name = name;
 
-            if (!dict.TryGetValue("created", out var value2)) { Log.Write("В схеме нет времени создания"); return; }
-            if (value2 is not int create_t) { Log.Write("Время создания схемы - не строка"); return; }
+            if (!dict.TryGetValue("created", out var value2)) throw new Exception("В схеме нет времени создания");
+            if (value2 is not int create_t) throw new Exception("Время создания схемы - не строка");
             Created = create_t;
 
-            if (!dict.TryGetValue("modified", out var value3)) { Log.Write("В схеме нет времени изменения"); return; }
-            if (value3 is not int mod_t) { Log.Write("Время изменения схемы - не строка"); return; }
+            if (!dict.TryGetValue("modified", out var value3)) throw new Exception("В схеме нет времени изменения");
+            if (value3 is not int mod_t) throw new Exception("Время изменения схемы - не строка");
             Modified = mod_t;
 
-            if (!dict.TryGetValue("items", out var value4)) { Log.Write("В схеме нет списка элементов"); return; }
-            if (value4 is not object[] arr) { Log.Write("Список элементов схемы - не массив объектов"); return; }
-            items = arr;
+            if (!dict.TryGetValue("items", out var value4)) throw new Exception("В схеме нет списка элементов");
+            if (value4 is not List<object> arr) throw new Exception("Список элементов схемы - не массив объектов");
+            items = arr.ToArray();
 
-            if (!dict.TryGetValue("joins", out var value5)) { Log.Write("В схеме нет списка соединений"); return; }
-            if (value5 is not object[] arr2) { Log.Write("Список соединений схемы - не массив объектов"); return; }
-            joins = arr2;
+            if (!dict.TryGetValue("joins", out var value5)) throw new Exception("В схеме нет списка соединений");
+            if (value5 is not List<object> arr2) throw new Exception("Список соединений схемы - не массив объектов");
+            joins = arr2.ToArray();
 
-            if (!dict.TryGetValue("states", out var value6)) { Log.Write("В схеме нет списка состояний"); return; }
-            if (value6 is not bool[] arr3) { Log.Write("Список состояний схемы - не массив bool"); return; }
-            states = arr3;
+            if (!dict.TryGetValue("states", out var value6)) throw new Exception("В схеме нет списка состояний");
+            if (value6 is not List<object> arr3) throw new Exception("Список состояний схемы - не массив bool");
+            states = arr3.Select(x => (bool) x).ToArray();
         }
 
         public void Update(object[] items, object[] joins, bool[] states) {

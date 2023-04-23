@@ -3,11 +3,11 @@ using Avalonia.Controls;
 using ReactiveUI;
 using System.Reactive;
 using LogicSimulator.Views;
+using LogicSimulator.Models;
 
 namespace LogicSimulator.ViewModels {
     public class LauncherWindowViewModel: ViewModelBase {
         Window? me;
-        readonly Window mw = new MainWindow();
 
         public LauncherWindowViewModel() {
             Create = ReactiveCommand.Create<Unit, Unit>(_ => { FuncCreate(); return new Unit(); });
@@ -18,7 +18,8 @@ namespace LogicSimulator.ViewModels {
         void FuncCreate() {
             var newy = map.filer.CreateProject();
             current_proj = newy;
-            mw.Show();
+            current_scheme = current_proj.GetFirstCheme();
+            new MainWindow().Show();
             me?.Close();
         }
         void FuncExit() {
@@ -29,7 +30,7 @@ namespace LogicSimulator.ViewModels {
         public ReactiveCommand<Unit, Unit> Exit { get; }
 
 
-        public static string[] ProjectList { get => new string[] { "1", "2", "3" }; }
+        public static Project[] ProjectList { get => map.filer.GetSortedProjects(); }
 
 
 
@@ -39,7 +40,12 @@ namespace LogicSimulator.ViewModels {
             if (src is ContentPresenter cp && cp.Child is Border bord) src = bord;
             if (src is Border bord2 && bord2.Child is TextBlock tb2) src = tb2;
 
+            if (src is not TextBlock tb || tb.Tag is not Project proj) return;
 
+            current_proj = proj;
+            current_scheme = current_proj.GetFirstCheme();
+            new MainWindow().Show();
+            me?.Close();
         }
     }
 }
