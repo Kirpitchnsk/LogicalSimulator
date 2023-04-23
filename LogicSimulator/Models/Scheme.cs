@@ -1,5 +1,4 @@
-﻿using LogicSimulator.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -74,5 +73,7 @@ namespace LogicSimulator.Models {
             };
         }
         public void Save() => FileHandler.SaveScheme(this);
+
+        public override string ToString() => Name;
     }
 }

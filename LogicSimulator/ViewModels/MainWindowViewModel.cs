@@ -2,10 +2,10 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
+using LogicSimulator.Models;
 using LogicSimulator.Views.Shapes;
 using ReactiveUI;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 
 namespace LogicSimulator.ViewModels {
@@ -106,9 +106,7 @@ namespace LogicSimulator.ViewModels {
 
         public static string ProjName { get => current_proj == null ? "???" : current_proj.Name; }
 
-        readonly ObservableCollection<string> schemes = new() { "scheme_1", "scheme_lol", "scheme_boom" };
-
-        public ObservableCollection<string> Schemes { get => schemes; }
+        public static Scheme[] Schemes { get => current_proj == null ? System.Array.Empty<Scheme>() : current_proj.schemes.ToArray(); }
 
 
 
@@ -132,7 +130,10 @@ namespace LogicSimulator.ViewModels {
             newy.KeyUp += (object? sender, KeyEventArgs e) => {
                 if (e.Key != Key.Return) return;
                 // tb.Text = newy.Text;
+                Log.Write("TT: " + tb.Tag); // Тут не может быть null, В ПРИНЦИПЕ НЕ МОЖЕТ!!!!!!!!!!!!
                 if ((string?) tb.Tag == "p_name") current_proj?.ChangeName(newy.Text);
+                else if (tb.Tag is Scheme scheme) Log.Write("S: " + scheme);
+                else Log.Write("T: " + (tb.Tag == null));
 
                 b.Child = tb;
                 cur_border = null; old_b_child = null;
