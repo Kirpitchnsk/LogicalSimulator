@@ -106,7 +106,7 @@ namespace LogicSimulator.ViewModels {
 
         public static string ProjName { get => current_proj == null ? "???" : current_proj.Name; }
 
-        public static Scheme[] Schemes { get => current_proj == null ? System.Array.Empty<Scheme>() : current_proj.schemes.ToArray(); }
+        public static List<Scheme> Schemes { get => current_proj == null ? new() : current_proj.schemes; }
 
 
 
@@ -126,14 +126,18 @@ namespace LogicSimulator.ViewModels {
             old_b_child = tb;
 
             var newy = new TextBox { Text = tb.Text }; // Изи блиц-транcформация в одну строчку ;'-}
+            Log.Write("Tag: " + tb.Tag);
             b.Child = newy;
+            Log.Write("Tag: " + tb.Tag); // КААААК?!?!?!? Почему пропажа предка удаляет Tag?!
             newy.KeyUp += (object? sender, KeyEventArgs e) => {
                 if (e.Key != Key.Return) return;
                 // tb.Text = newy.Text;
-                Log.Write("TT: " + tb.Tag); // Тут не может быть null, В ПРИНЦИПЕ НЕ МОЖЕТ!!!!!!!!!!!!
+                Control item = tb;
+                while (item.Parent != null) {
+                    item = (Control) item.Parent;
+                    Log.Write("i: " + item); // ЧЁЁЁЁЁЁ?!?!?!?!?!?!?!?!?! НИЧЕГО НЕТ?!!?!??!?!?!
+                }
                 if ((string?) tb.Tag == "p_name") current_proj?.ChangeName(newy.Text);
-                else if (tb.Tag is Scheme scheme) Log.Write("S: " + scheme);
-                else Log.Write("T: " + (tb.Tag == null));
 
                 b.Child = tb;
                 cur_border = null; old_b_child = null;
