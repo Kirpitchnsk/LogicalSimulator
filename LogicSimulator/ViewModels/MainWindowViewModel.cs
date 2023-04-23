@@ -103,6 +103,7 @@ namespace LogicSimulator.ViewModels {
 
         Border? cur_border;
         TextBlock? old_b_child;
+        object? old_b_child_tag;
 
         public static string ProjName { get => current_proj == null ? "???" : current_proj.Name; }
 
@@ -124,21 +125,19 @@ namespace LogicSimulator.ViewModels {
             if (cur_border != null && old_b_child != null) cur_border.Child = old_b_child;
             cur_border = b;
             old_b_child = tb;
+            old_b_child_tag = tb.Tag;
 
             var newy = new TextBox { Text = tb.Text }; // Изи блиц-транcформация в одну строчку ;'-}
-            Log.Write("Tag: " + tb.Tag);
+            
+            // Log.Write("Tag: " + tb.Tag);
             b.Child = newy;
-            Log.Write("Tag: " + tb.Tag); // КААААК?!?!?!? Почему пропажа предка удаляет Tag?!
+            //Log.Write("Tag: " + tb.Tag); // КААААК?!?!?!? Почему пропажа предка удаляет Tag?!
+            
             newy.KeyUp += (object? sender, KeyEventArgs e) => {
                 if (e.Key != Key.Return) return;
                 // tb.Text = newy.Text;
-                Control item = tb;
-                while (item.Parent != null) {
-                    item = (Control) item.Parent;
-                    Log.Write("i: " + item); // ЧЁЁЁЁЁЁ?!?!?!?!?!?!?!?!?! НИЧЕГО НЕТ?!!?!??!?!?!
-                }
                 if ((string?) tb.Tag == "p_name") current_proj?.ChangeName(newy.Text);
-
+                else if (old_b_child_tag is Scheme scheme) scheme.ChangeName(newy.Text);
                 b.Child = tb;
                 cur_border = null; old_b_child = null;
 

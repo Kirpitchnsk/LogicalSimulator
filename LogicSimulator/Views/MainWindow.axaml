@@ -59,7 +59,7 @@
 					<ListBox.ItemTemplate>
 						<DataTemplate>
 							<Border Classes="b">
-								<TextBlock Text="{Binding}" Tag="{Binding}"/> <!-- Час уже бьюсь, а Tag="{Binding}" не работает, чтобы я там не пытался забиндить!!!!! Дажа фишка в LauncherWindow работает, а тут проскакивает смачный баг!!!!!! -->
+								<TextBlock Text="{Binding}" Tag="{Binding}"/>
 							</Border>
 						</DataTemplate>
 					</ListBox.ItemTemplate>

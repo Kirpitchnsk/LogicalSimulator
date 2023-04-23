@@ -13,17 +13,20 @@ namespace LogicSimulator.Models {
         public bool[] states;
 
         public string FileName { get; }
+        private Project parent;
 
-        public Scheme() { // Новая схема
+        public Scheme(Project p) { // Новая схема
             Created = Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             Name = "Newy";
             items = joins = Array.Empty<object>();
             states = Array.Empty<bool>();
             FileName = FileHandler.GetSchemeFileName();
+            parent = p;
         }
 
-        public Scheme(string fileName, object data) { // Импорт
+        public Scheme(Project p, string fileName, object data) { // Импорт
             FileName = fileName;
+            parent = p;
 
             if (data is not Dictionary<string, object> dict) throw new Exception("Ожидался словарь в корне схемы");
 
@@ -57,7 +60,7 @@ namespace LogicSimulator.Models {
             this.joins = joins;
             this.states = states;
             Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            Save();
+            Update();
         }
 
 
@@ -73,7 +76,18 @@ namespace LogicSimulator.Models {
             };
         }
         public void Save() => FileHandler.SaveScheme(this);
+        public void Update() {
+            Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            parent.Modified = Modified;
+            parent.Save();
+            Save();
+        }
 
         public override string ToString() => Name;
+
+        internal void ChangeName(string name) {
+            Name = name;
+            Update();
+        }
     }
 }

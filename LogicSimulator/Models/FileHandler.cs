@@ -50,10 +50,10 @@ namespace LogicSimulator.Models {
             } catch (Exception e) { Log.Write("Неудачная попытка загрузить проект:\n" + e); }
             return null;
         }
-        public static Scheme? LoadScheme(string fileName) {
+        public static Scheme? LoadScheme(Project parent, string fileName) {
             try {
                 var obj = Utils.Xml2obj(File.ReadAllText(dir + fileName)) ?? throw new DataException("Не верная структура XML-файла схемы!");
-                var scheme = new Scheme(fileName, obj);
+                var scheme = new Scheme(parent, fileName, obj);
                 return scheme;
             } catch (Exception e) { Log.Write("Неудачная попытка загрузить схему:\n" + e); }
             return null;

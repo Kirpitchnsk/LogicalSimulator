@@ -47,7 +47,7 @@ namespace LogicSimulator.Models {
 
 
         public Scheme CreateScheme() {
-            var scheme = new Scheme();
+            var scheme = new Scheme(this);
             schemes.Add(scheme);
             scheme.Save();
             scheme_files.Add(scheme.FileName);
@@ -59,7 +59,7 @@ namespace LogicSimulator.Models {
         private void LoadSchemes() {
             if (loaded) return;
             foreach (var fileName in scheme_files) {
-                var scheme = FileHandler.LoadScheme(fileName);
+                var scheme = FileHandler.LoadScheme(this, fileName);
                 if (scheme != null) schemes.Add(scheme);
             }
             loaded = true;
