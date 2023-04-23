@@ -30,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\LauncherWindow.axaml.cs">
+      <DependentUpon>LauncherWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Shapes\SuM.axaml.cs">
       <DependentUpon>SuM.axaml</DependentUpon>
     </Compile>

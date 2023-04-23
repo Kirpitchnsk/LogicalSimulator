@@ -105,7 +105,6 @@ namespace LogicSimulator.ViewModels {
 
 
         public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
-            Log.Write("DT: " + e.Source);
             var src = (Control?) e.Source;
 
             if (src is ContentPresenter cp && cp.Child is Border bord) src = bord;
