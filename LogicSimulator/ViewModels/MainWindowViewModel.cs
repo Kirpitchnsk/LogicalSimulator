@@ -3,10 +3,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using LogicSimulator.Models;
+using LogicSimulator.Views;
 using LogicSimulator.Views.Shapes;
 using ReactiveUI;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Reactive;
 
 namespace LogicSimulator.ViewModels {
     public class Log {
@@ -33,13 +36,13 @@ namespace LogicSimulator.ViewModels {
         }
     }
 
-    public class MainWindowViewModel: ViewModelBase {
+    public class MainWindowViewModel: ViewModelBase, INotifyPropertyChanged {
         private string log = "";
-        // Canvas canv = new();
         public string Logg { get => log; set => this.RaiseAndSetIfChanged(ref log, value); }
 
         public MainWindowViewModel() { // Если я буду Window mw передавать через этот конструктор, то предварительный просмотр снова порвёт смачно XD
             Log.Mwvm = this;
+            Comm = ReactiveCommand.Create<string, Unit>(n => { FuncComm(n); return new Unit(); });
 
             /* Так не работает :/
             var app = Application.Current;
@@ -50,10 +53,12 @@ namespace LogicSimulator.ViewModels {
             Log.Write("Windows: " + life.Windows.Count); */
         }
 
-        public static void AddWindow(Window mw) {
-            var canv = mw.Find<Canvas>("Canvas");
+        private Window? mw;
+        public void AddWindow(Window window) {
+            var canv = window.Find<Canvas>("Canvas");
+
+            mw = window;
             if (canv == null) return; // Такого не бывает
-            // this.canv = canv;
 
             canv.Children.Add(map.Marker);
 
@@ -90,8 +95,6 @@ namespace LogicSimulator.ViewModels {
             panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) => {
                 if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y);
             };
-
-            Log.Write("Текущий проект:\n" + current_proj);
         }
 
         public static IGate[] ItemTypes { get => map.item_types; }
@@ -146,9 +149,40 @@ namespace LogicSimulator.ViewModels {
 
                 b.Child = tb;
                 cur_border = null; old_b_child = null;
-
-                map.Export();
             };
         }
+
+#pragma warning disable CS0108
+        public event PropertyChangedEventHandler? PropertyChanged;
+#pragma warning restore CS0108
+        public void Update() {
+            Log.Write("Текущий проект:\n" + current_proj);
+            PropertyChanged?.Invoke(this, new(nameof(ProjName)));
+            PropertyChanged?.Invoke(this, new(nameof(Schemes)));
+        }
+
+        /*
+         * Кнопочки!
+         */
+
+        public void FuncComm(string Comm) {
+            Log.Write("Comm: " + Comm);
+            switch (Comm) {
+            case "Create":
+                break;
+            case "Open":
+                new LauncherWindow().Show();
+                mw?.Hide();
+                break;
+            case "Save":
+                if (current_scheme != null) map.Export(current_scheme);
+                break;
+            case "Exit":
+                mw?.Close();
+                break;
+            }
+        }
+
+        public ReactiveCommand<string, Unit> Comm { get; }
     }
 }

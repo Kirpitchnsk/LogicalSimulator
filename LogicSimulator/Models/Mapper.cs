@@ -10,6 +10,7 @@ using Avalonia.Media;
 using Avalonia.LogicalTree;
 using System.Linq;
 using Button = LogicSimulator.Views.Shapes.Button;
+using System.Collections;
 
 namespace LogicSimulator.Models {
     public class Mapper {
@@ -343,7 +344,7 @@ namespace LogicSimulator.Models {
 
         public readonly FileHandler filer = new();
 
-        public void Export() {
+        public void Export(Scheme current_scheme) {
             var arr = items.Select(x => x.Export()).ToArray();
 
             Dictionary<IGate, int> item_to_num = new();
@@ -353,6 +354,9 @@ namespace LogicSimulator.Models {
             foreach (var item in items) joins.Add(item.ExportJoins(item_to_num));
 
             bool[] states = sim.Export();
+
+            try { current_scheme.Update(arr, joins.ToArray(), states); }
+            catch (Exception e) { Log.Write("Save error:\n" + e); }
 
             Log.Write("Items: " + Utils.Obj2json(arr));
             Log.Write("Joins: " + Utils.Obj2json(joins));

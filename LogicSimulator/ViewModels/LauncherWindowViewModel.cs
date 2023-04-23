@@ -8,6 +8,7 @@ using LogicSimulator.Models;
 namespace LogicSimulator.ViewModels {
     public class LauncherWindowViewModel: ViewModelBase {
         Window? me;
+        private static readonly MainWindow mw = new();
 
         public LauncherWindowViewModel() {
             Create = ReactiveCommand.Create<Unit, Unit>(_ => { FuncCreate(); return new Unit(); });
@@ -19,7 +20,8 @@ namespace LogicSimulator.ViewModels {
             var newy = map.filer.CreateProject();
             current_proj = newy;
             current_scheme = current_proj.GetFirstCheme();
-            new MainWindow().Show();
+            mw.Show();
+            mw.Update();
             me?.Close();
         }
         void FuncExit() {
@@ -32,8 +34,6 @@ namespace LogicSimulator.ViewModels {
 
         public static Project[] ProjectList { get => map.filer.GetSortedProjects(); }
 
-
-
         public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
             var src = (Control?) e.Source;
 
@@ -44,7 +44,8 @@ namespace LogicSimulator.ViewModels {
 
             current_proj = proj;
             current_scheme = current_proj.GetFirstCheme();
-            new MainWindow().Show();
+            mw.Show();
+            mw.Update();
             me?.Close();
         }
     }
