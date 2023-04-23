@@ -334,7 +334,7 @@ namespace LogicSimulator.Models {
          * Экспорт и импорт
          */
 
-        readonly FileHandler filer = new();
+        public readonly FileHandler filer = new();
 
         public void Export() {
             var arr = items.Select(x => x.Export()).ToArray();

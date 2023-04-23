@@ -32,7 +32,6 @@ namespace LogicSimulator.ViewModels {
     public class MainWindowViewModel: ViewModelBase {
         private string log = "";
         // Canvas canv = new();
-        readonly Mapper map = new();
         public string Logg { get => log; set => this.RaiseAndSetIfChanged(ref log, value); }
 
         public MainWindowViewModel() { // Если я буду Window mw передавать через этот конструктор, то предварительный просмотр снова порвёт смачно XD
@@ -47,7 +46,7 @@ namespace LogicSimulator.ViewModels {
             Log.Write("Windows: " + life.Windows.Count); */
         }
 
-        public void AddWindow(Window mw) {
+        public static void AddWindow(Window mw) {
             var canv = mw.Find<Canvas>("Canvas");
             if (canv == null) return; // Такого не бывает
             // this.canv = canv;
@@ -89,8 +88,8 @@ namespace LogicSimulator.ViewModels {
             };
         }
 
-        public IGate[] ItemTypes { get => map.item_types; }
-        public int SelectedItem { get => map.SelectedItem; set => map.SelectedItem = value; }
+        public static IGate[] ItemTypes { get => map.item_types; }
+        public static int SelectedItem { get => map.SelectedItem; set => map.SelectedItem = value; }
 
         /*
          * Обработка той самой панели со схемами проекта

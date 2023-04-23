@@ -9,7 +9,7 @@ namespace LogicSimulator.Views {
             InitializeComponent();
             mwvm = new MainWindowViewModel();
             DataContext = mwvm;
-            mwvm.AddWindow(this);
+            MainWindowViewModel.AddWindow(this);
         }
 
         public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
