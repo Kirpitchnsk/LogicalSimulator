@@ -6,6 +6,7 @@ using LogicSimulator.Models;
 using LogicSimulator.Views.Shapes;
 using ReactiveUI;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace LogicSimulator.ViewModels {
     public class Log {
@@ -97,8 +98,14 @@ namespace LogicSimulator.ViewModels {
 
         Border? cur_border;
         TextBlock? old_b_child;
+        readonly ObservableCollection<string> schemes = new() { "scheme_1", "scheme_lol", "scheme_boom" };
+
+        public ObservableCollection<string> Schemes { get => schemes; }
+
+
 
         public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+            Log.Write("DT: " + e.Source);
             var src = (Control?) e.Source;
 
             if (src is ContentPresenter cp && cp.Child is Border bord) src = bord;
@@ -113,18 +120,16 @@ namespace LogicSimulator.ViewModels {
             cur_border = b;
             old_b_child = tb;
 
-            var newy = new TextBox { Text = tb.Text }; // Транcформация в одну строчку ;'-}
+            var newy = new TextBox { Text = tb.Text }; // Изи блиц-транcформация в одну строчку ;'-}
             b.Child = newy;
             newy.KeyUp += (object? sender, KeyEventArgs e) => {
                 if (e.Key != Key.Return) return;
                 tb.Text = newy.Text;
                 b.Child = tb;
                 cur_border = null; old_b_child = null;
-            };
-        }
 
-        private void Newy_KeyUp(object? sender, KeyEventArgs e) {
-            Log.Write("Newy_KeyUp: " + (e.Key == Key.Return));
+                map.Export();
+            };
         }
     }
 }

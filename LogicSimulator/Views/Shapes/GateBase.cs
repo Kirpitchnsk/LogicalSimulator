@@ -215,5 +215,19 @@ namespace LogicSimulator.Views.Shapes {
                 }
             }
         }
+
+        /*
+         * Экспорт, но может быть прокачан в дочернем классе, если есть что добавить
+         */
+
+        public abstract int TypeId { get; }
+
+        public object Export() {
+            return new Dictionary<string, object> {
+                ["id"] = TypeId,
+                ["pos"] = GetPos(),
+                ["size"] = GetSize()
+            };
+        }
     }
 }

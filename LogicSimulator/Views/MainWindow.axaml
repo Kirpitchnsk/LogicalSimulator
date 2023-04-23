@@ -53,18 +53,16 @@
 			</Panel>
 			<Grid Grid.Column="2" RowDefinitions="auto,*" DoubleTapped="DTapped">
 				<Border Classes="b" BorderBrush="#4df" Background="#0000">
-					<TextBlock>Название проекта</TextBlock>
+					<TextBlock Tag="p_name">Название проекта</TextBlock>
 				</Border>
-				<ListBox Grid.Row="1" Padding="10 4 0 0">
-					<Border Classes="b">
-						<TextBlock>Название схемы</TextBlock>
-					</Border>
-					<Border Classes="b">
-						<TextBlock>Название схемы</TextBlock>
-					</Border>
-					<Border Classes="b">
-						<TextBlock>Название схемы</TextBlock>
-					</Border>
+				<ListBox Grid.Row="1" Padding="10 4 0 0" Items="{Binding Schemes}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Border Classes="b">
+								<TextBlock Text="{Binding}"/>
+							</Border>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
 				</ListBox>
 			</Grid>
 		</Grid>

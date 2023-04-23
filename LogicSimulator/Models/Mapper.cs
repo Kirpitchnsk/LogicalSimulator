@@ -8,6 +8,7 @@ using DynamicData;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.LogicalTree;
+using System.Linq;
 
 namespace LogicSimulator.Models {
     public class Mapper {
@@ -327,6 +328,15 @@ namespace LogicSimulator.Models {
 
         public void WheelMove(Control item, double move) {
             // Log.Write("WheelMoved: " + item.GetType().Name + " delta: " + (move > 0 ? 1 : -1));
+        }
+
+        /*
+         * Экспорт и импорт
+         */
+
+        public void Export() {
+            var arr = items.Select(x => x.Export()).ToArray();
+            Log.Write("Export: " + Utils.Obj2json(arr));
         }
     }
 }

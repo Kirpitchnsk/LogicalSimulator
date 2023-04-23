@@ -26,5 +26,8 @@ namespace LogicSimulator.Views.Shapes {
 
         public void Brain(ref bool[] ins, ref bool[] outs);
         public void LogicUpdate(Dictionary<IGate, Meta> ids, Meta me);
+
+        public int TypeId { get; }
+        public object Export();
     }
 }

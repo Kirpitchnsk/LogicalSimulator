@@ -59,6 +59,7 @@ namespace LogicSimulator.Models {
             case double @double: return @double.ToString().Replace(',', '.');
 
             case Point @point: return "\"$p$" + (int) @point.X + "," + (int) @point.Y + '"';
+            case Size @size: return "\"$s$" + (int) @size.Width + "," + (int) @size.Height + '"';
             case Points @points: return "\"$P$" + string.Join("|", @points.Select(p => (int) p.X + "," + (int) p.Y)) + '"';
             case SolidColorBrush @color: return "\"$C$" + @color.Color + '"';
             case Thickness @thickness: return "\"$T$" + @thickness.Left + "," + @thickness.Top + "," + @thickness.Right + "," + @thickness.Bottom + '"';
@@ -94,7 +95,8 @@ namespace LogicSimulator.Models {
             string data = str[3..];
             string[] thick = str[1] == 'T' ? data.Split(',') : System.Array.Empty<string>();
             return str[1] switch {
-                // 'p' => new SafePoint(data).Point,
+                'p' => Point.Parse(data),
+                's' => Size.Parse(data),
                 // 'P' => new SafePoints(data.Replace('|', ' ')).Points,
                 'C' => new SolidColorBrush(Color.Parse(data)),
                 'T' => new Thickness(double.Parse(thick[0]), double.Parse(thick[1]), double.Parse(thick[2]), double.Parse(thick[3])),
