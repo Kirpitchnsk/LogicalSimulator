@@ -229,5 +229,20 @@ namespace LogicSimulator.Views.Shapes {
                 ["size"] = GetSize()
             };
         }
+
+        public List<object[]> ExportJoins(Dictionary<IGate, int> to_num) {
+            List<object[]> res = new();
+            int n = 0, ins = CountIns;
+            foreach (var join in joins) {
+                if (++n > ins) break;
+                if (join == null) continue;
+                Distantor a = join.A, b = join.B;
+                res.Add(new object[] {
+                    to_num[a.parent], a.num,
+                    to_num[b.parent], b.num
+                });
+            }
+            return res;
+        }
     }
 }

@@ -88,5 +88,7 @@ namespace LogicSimulator.Models {
             (outs2, outs) = (outs, outs2); // Магия здесь!
             // Log.Write("Выходы: " + Utils.Obj2json(outs));
         }
+
+        public bool[] Export() => outs.ToArray();
     }
 }

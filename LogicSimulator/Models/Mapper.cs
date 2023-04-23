@@ -336,7 +336,18 @@ namespace LogicSimulator.Models {
 
         public void Export() {
             var arr = items.Select(x => x.Export()).ToArray();
-            Log.Write("Export: " + Utils.Obj2json(arr));
+
+            Dictionary<IGate, int> item_to_num = new();
+            int n = 0;
+            foreach (var item in items) item_to_num.Add(item, n++);
+            List<object[]> joins = new();
+            foreach (var item in items) joins.Add(item.ExportJoins(item_to_num));
+
+            bool[] states = sim.Export();
+
+            Log.Write("Items: " + Utils.Obj2json(arr));
+            Log.Write("Joins: " + Utils.Obj2json(joins));
+            Log.Write("States: " + Utils.Obj2json(states));
         }
     }
 }
