@@ -1,6 +1,9 @@
-﻿using System;
+﻿using LogicSimulator.ViewModels;
+using ReactiveUI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 
 namespace LogicSimulator.Models {
     public class Scheme {
@@ -22,6 +25,10 @@ namespace LogicSimulator.Models {
             states = Array.Empty<bool>();
             FileName = FileHandler.GetSchemeFileName();
             parent = p;
+
+            Open = ReactiveCommand.Create<Unit, Unit>(_ => { FuncOpen(); return new Unit(); });
+            NewItem = ReactiveCommand.Create<Unit, Unit>(_ => { FuncNewItem(); return new Unit(); });
+            Delete = ReactiveCommand.Create<Unit, Unit>(_ => { FuncDelete(); return new Unit(); });
         }
 
         public Scheme(Project p, string fileName, object data) { // Импорт
@@ -53,6 +60,10 @@ namespace LogicSimulator.Models {
             if (!dict.TryGetValue("states", out var value6)) throw new Exception("В схеме нет списка состояний");
             if (value6 is not List<object> arr3) throw new Exception("Список состояний схемы - не массив bool");
             states = arr3.Select(x => (bool) x).ToArray();
+
+            Open = ReactiveCommand.Create<Unit, Unit>(_ => { FuncOpen(); return new Unit(); });
+            NewItem = ReactiveCommand.Create<Unit, Unit>(_ => { FuncNewItem(); return new Unit(); });
+            Delete = ReactiveCommand.Create<Unit, Unit>(_ => { FuncDelete(); return new Unit(); });
         }
 
         public void Update(object[] items, object[] joins, bool[] states) {
@@ -89,5 +100,24 @@ namespace LogicSimulator.Models {
             Name = name;
             Update();
         }
+
+        /*
+         * Кнопочки
+         */
+
+        void FuncOpen() {
+            ViewModelBase.map.current_scheme = this;
+            ViewModelBase.map.ImportScheme();
+        }
+        void FuncNewItem() {
+            parent.AddScheme(this);
+        }
+        void FuncDelete() {
+            parent.RemoveScheme(this);
+        }
+
+        public ReactiveCommand<Unit, Unit> Open { get; }
+        public ReactiveCommand<Unit, Unit> NewItem { get; }
+        public ReactiveCommand<Unit, Unit> Delete { get; }
     }
 }

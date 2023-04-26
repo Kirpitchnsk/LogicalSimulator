@@ -2,6 +2,7 @@
 using LogicSimulator.Views.Shapes;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,16 +29,31 @@ namespace LogicSimulator.Models {
 
 
     public class Simulator {
-        public bool lock_sim = false;
         public Simulator() {
-            var task = Task.Run(async () => {
-                for (;;) {
+            Start();
+        }
+
+        private Task? task;
+        private bool stop_sim = false;
+        public bool lock_sim = false;
+        public void Start() {
+            if (task != null || lock_sim) return;
+            stop_sim = false;
+            task = Task.Run(async () => {
+                for (; ; ) {
                     await Task.Delay(1000 / 1000); // Повышааааааееееем оборооооооотыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыы!!! 60 герц... Нет, все 1000! ;'-}
-                    if (lock_sim) continue;
-                    try { Tick(); }
-                    catch (Exception e) { Log.Write("Logical crush: " + e); continue; }
+                    
+                    try { Tick(); } catch (Exception e) { Log.Write("Logical crush: " + e); continue; }
+
+                    if (stop_sim) return;
                 }
             });
+        }
+        public void Stop() {
+            if (task == null) return;
+            stop_sim = true;
+            task.GetAwaiter().GetResult();
+            task = null;
         }
 
 
@@ -48,7 +64,7 @@ namespace LogicSimulator.Models {
         readonly Dictionary<IGate, Meta> ids = new();
 
         public void AddItem(IGate item) {
-            lock_sim = true;
+            Stop();
 
             int out_id = outs.Count;
             for (int i = 0; i < item.CountOuts; i++) {
@@ -61,18 +77,18 @@ namespace LogicSimulator.Models {
             items.Add(meta);
             ids.Add(item, meta);
 
-            lock_sim = false;
+            Start();
             // meta.Print();
         }
 
         public void RemoveItem(IGate item) {
-            lock_sim = true;
+            Stop();
 
             Meta meta = ids[item];
             meta.item = null;
             foreach (var i in Enumerable.Range(0, meta.outs.Length)) meta.outs[i] = 0;
 
-            lock_sim = false;
+            Start();
         }
 
         private void Tick() {
@@ -103,6 +119,12 @@ namespace LogicSimulator.Models {
             if (state.Length == 0) state = new bool[] { false };
             outs = state.ToList();
             outs2 = Enumerable.Repeat(false, state.Length).ToList();
+        }
+        public void Clear() {
+            outs = new() { false };
+            outs2 = new() { false };
+            items.Clear();
+            ids.Clear();
         }
     }
 }

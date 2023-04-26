@@ -6,8 +6,8 @@ using LogicSimulator.Models;
 using LogicSimulator.Views;
 using LogicSimulator.Views.Shapes;
 using ReactiveUI;
-using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Reactive;
@@ -24,7 +24,7 @@ namespace LogicSimulator.ViewModels {
         public static void Write(string message, bool without_update = false) {
             if (!without_update) {
                 foreach (var mess in message.Split('\n')) logs.Add(mess);
-                while (logs.Count > 50) logs.RemoveAt(0);
+                while (logs.Count > 45) logs.RemoveAt(0);
 
                 if (Mwvm != null) Mwvm.Logg = string.Join('\n', logs);
             }
@@ -49,6 +49,7 @@ namespace LogicSimulator.ViewModels {
         public MainWindowViewModel() { // Если я буду Window mw передавать через этот конструктор, то предварительный просмотр снова порвёт смачно XD
             Log.Mwvm = this;
             Comm = ReactiveCommand.Create<string, Unit>(n => { FuncComm(n); return new Unit(); });
+            NewItem = ReactiveCommand.Create<Unit, Unit>(_ => { FuncNewItem(); return new Unit(); });
 
             /* Так не работает :/
             var app = Application.Current;
@@ -60,12 +61,11 @@ namespace LogicSimulator.ViewModels {
         }
 
         private Window? mw;
-        private Canvas? canv;
         public void AddWindow(Window window) {
             var canv = window.Find<Canvas>("Canvas");
 
             mw = window;
-            this.canv = canv;
+            map.canv = canv;
             if (canv == null) return; // Такого не бывает
 
             canv.Children.Add(map.Marker);
@@ -112,14 +112,14 @@ namespace LogicSimulator.ViewModels {
          * Обработка той самой панели со схемами проекта
          */
 
-        Border? cur_border;
+        Grid? cur_grid;
         TextBlock? old_b_child;
         object? old_b_child_tag;
         string? prev_scheme_name;
 
         public static string ProjName { get => current_proj == null ? "???" : current_proj.Name; }
 
-        public static List<Scheme> Schemes { get => current_proj == null ? new() : current_proj.schemes; }
+        public static ObservableCollection<Scheme> Schemes { get => current_proj == null ? new() : current_proj.schemes; }
 
 
 
@@ -127,25 +127,30 @@ namespace LogicSimulator.ViewModels {
             var src = (Control?) e.Source;
 
             if (src is ContentPresenter cp && cp.Child is Border bord) src = bord;
-            if (src is Border bord2 && bord2.Child is TextBlock tb2) src = tb2;
+            if (src is Border bord2 && bord2.Child is Grid g2) src = g2;
+            if (src is Grid g3 && g3.Children[0] is TextBlock tb2) src = tb2;
 
             if (src is not TextBlock tb) return;
 
             var p = tb.Parent;
-            if (p == null || p is not Border b) return;
+            if (p == null) return;
 
-            if (cur_border != null && old_b_child != null) cur_border.Child = old_b_child;
-            cur_border = b;
+            if (old_b_child != null)
+                if (cur_grid != null) cur_grid.Children[0] = old_b_child;
+
+            if (p is not Grid g) return;
+            cur_grid = g;
+
             old_b_child = tb;
             old_b_child_tag = tb.Tag;
             prev_scheme_name = tb.Text;
 
             var newy = new TextBox { Text = tb.Text }; // Изи блиц-транcформация в одну строчку ;'-}
-            
+
             // Log.Write("Tag: " + tb.Tag);
-            b.Child = newy;
+            cur_grid.Children[0] = newy;
             //Log.Write("Tag: " + tb.Tag); // КААААК?!?!?!? Почему пропажа предка удаляет Tag?!
-            
+
             newy.KeyUp += (object? sender, KeyEventArgs e) => {
                 if (e.Key != Key.Return) return;
 
@@ -155,8 +160,8 @@ namespace LogicSimulator.ViewModels {
                     else if (old_b_child_tag is Scheme scheme) scheme.ChangeName(newy.Text);
                 }
 
-                b.Child = tb;
-                cur_border = null; old_b_child = null;
+                cur_grid.Children[0] = tb;
+                cur_grid = null; old_b_child = null;
             };
         }
 
@@ -166,8 +171,7 @@ namespace LogicSimulator.ViewModels {
         public void Update() {
             Log.Write("Текущий проект:\n" + current_proj);
 
-            if (current_scheme == null || canv == null) throw new Exception("Такого не бывает");
-            map.ImportScheme(current_scheme, canv);
+            map.ImportScheme();
 
             PropertyChanged?.Invoke(this, new(nameof(ProjName)));
             PropertyChanged?.Invoke(this, new(nameof(Schemes)));
@@ -178,16 +182,18 @@ namespace LogicSimulator.ViewModels {
          */
 
         public void FuncComm(string Comm) {
-            Log.Write("Comm: " + Comm);
+            // Log.Write("Comm: " + Comm);
             switch (Comm) {
             case "Create":
+                new LauncherWindow().Show();
+                mw?.Hide();
                 break;
             case "Open":
                 new LauncherWindow().Show();
                 mw?.Hide();
                 break;
             case "Save":
-                if (current_scheme != null) map.Export(current_scheme);
+                map.Export();
                 break;
             case "Exit":
                 mw?.Close();
@@ -196,5 +202,11 @@ namespace LogicSimulator.ViewModels {
         }
 
         public ReactiveCommand<string, Unit> Comm { get; }
+
+        static void FuncNewItem() {
+            current_proj?.AddScheme(null);
+        }
+
+        public ReactiveCommand<Unit, Unit> NewItem { get; }
     }
 }

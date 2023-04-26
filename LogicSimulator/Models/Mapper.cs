@@ -10,8 +10,6 @@ using Avalonia.Media;
 using Avalonia.LogicalTree;
 using System.Linq;
 using Button = LogicSimulator.Views.Shapes.Button;
-using System.Threading.Tasks;
-using Avalonia.Threading;
 
 namespace LogicSimulator.Models {
     public class Mapper {
@@ -37,6 +35,7 @@ namespace LogicSimulator.Models {
                 5 => new Switch(),
                 6 => new Button(),
                 7 => new LightBulb(),
+                8 => new NAND_2(),
                 _ => new AND_2(),
             };
         }
@@ -50,6 +49,7 @@ namespace LogicSimulator.Models {
             CreateItem(5),
             CreateItem(6),
             CreateItem(7),
+            CreateItem(8),
         };
 
         public IGate GenSelectedItem() => CreateItem(selected_item);
@@ -72,6 +72,7 @@ namespace LogicSimulator.Models {
         }
         public void RemoveAll() {
             foreach (var item in items.ToArray()) RemoveItem(item);
+            sim.Clear();
         }
 
         /*
@@ -163,7 +164,7 @@ namespace LogicSimulator.Models {
             case 5 or 6 or 7:
                 if (marker_circle == null) break;
                 var gate = GetGate(marker_circle) ?? throw new Exception("Чё?!"); // Такого не бывает
-                start_dist = gate.GetPin(marker_circle, FindCanvas());
+                start_dist = gate.GetPin(marker_circle);
 
                 var circle_pos = start_dist.GetPos();
                 marker.StartPoint = marker.EndPoint = circle_pos;
@@ -293,7 +294,7 @@ namespace LogicSimulator.Models {
                 if (start_dist == null) break;
                 if (marker_circle != null) {
                     var gate = GetGate(marker_circle) ?? throw new Exception("Чё?!"); // Такого не бывает
-                    var end_dist = gate.GetPin(marker_circle, FindCanvas());
+                    var end_dist = gate.GetPin(marker_circle);
                     // Log.Write("Стартовый элемент: " + start_dist.parent + " (" + start_dist.GetPos() + ")");
                     // Log.Write("Конечный  элемент: " + end_dist.parent   + " (" + end_dist.GetPos()   + ")");
                     var newy = new JoinedItems(start_dist, end_dist);
@@ -307,7 +308,7 @@ namespace LogicSimulator.Models {
                 JoinedItems.arrow_to_join.TryGetValue(old_join, out var @join);
                 if (marker_circle != null && @join != null) {
                     var gate = GetGate(marker_circle) ?? throw new Exception("Чё?!"); // Такого не бывает
-                    var p = gate.GetPin(marker_circle, FindCanvas());
+                    var p = gate.GetPin(marker_circle);
                     @join.Delete();
 
                     var newy = join_start ? new JoinedItems(@join.A, p) : new JoinedItems(p, @join.B);
@@ -346,8 +347,12 @@ namespace LogicSimulator.Models {
          */
 
         public readonly FileHandler filer = new();
+        public Canvas canv = new();
+        public Scheme? current_scheme;
 
-        public void Export(Scheme current_scheme) {
+        public void Export() {
+            if (current_scheme == null) return;
+
             var arr = items.Select(x => x.Export()).ToArray();
 
             Dictionary<IGate, int> item_to_num = new();
@@ -361,12 +366,15 @@ namespace LogicSimulator.Models {
             try { current_scheme.Update(arr, joins.ToArray(), states); }
             catch (Exception e) { Log.Write("Save error:\n" + e); }
 
-            Log.Write("Items: " + Utils.Obj2json(arr));
+            /* Log.Write("Items: " + Utils.Obj2json(arr));
             Log.Write("Joins: " + Utils.Obj2json(joins));
-            Log.Write("States: " + Utils.Obj2json(states));
+            Log.Write("States: " + Utils.Obj2json(states)); */
         }
 
-        public void ImportScheme(Scheme current_scheme, Canvas canv) {
+        public void ImportScheme() {
+            if (current_scheme == null) return;
+
+            sim.Stop();
             sim.lock_sim = true;
 
             RemoveAll();
@@ -388,25 +396,24 @@ namespace LogicSimulator.Models {
 
             List<JoinedItems> joinz = new();
             foreach (var obj in current_scheme.joins) {
-                if (obj is not List<object> @join) { Log.Write("Одно из соединений не того типа: " + obj); continue; }
-                if (@join.Count != 6 ||
-                    @join[0] is not int @num_a || @join[1] is not int @pin_a || @join[2] is not string @tag_a ||
-                    @join[3] is not int @num_b || @join[4] is not int @pin_b || @join[5] is not string @tag_b) { Log.Write("Содержимое списка соединения ошибочно"); continue; }
+                object[] join;
+                if (obj is List<object> @j) join = @j.ToArray();
+                else if (obj is object[] @j2) join = @j2;
+                else { Log.Write("Одно из соединений не того типа: " + obj + " " + Utils.Obj2json(obj)); continue; }
+                if (join.Length != 6 ||
+                    join[0] is not int @num_a || join[1] is not int @pin_a || join[2] is not string @tag_a ||
+                    join[3] is not int @num_b || join[4] is not int @pin_b || join[5] is not string @tag_b) { Log.Write("Содержимое списка соединения ошибочно"); continue; }
 
-                var newy = new JoinedItems(new(items_arr[@num_a], @pin_a, canv, tag_a), new(items_arr[@num_b], @pin_b, canv, tag_b));
+                var newy = new JoinedItems(new(items_arr[@num_a], @pin_a, tag_a), new(items_arr[@num_b], @pin_b, tag_b));
                 canv.Children.Add(newy.line);
                 joinz.Add(newy);
             }
 
+            foreach (var join in joinz) join.Update();
+
             sim.Import(current_scheme.states);
             sim.lock_sim = false;
-
-            Task.Run(async () => { // Временный багофикс невидимых линий соединения из-за специфики высчета центров кругов под копотом XD
-                await Task.Delay(50);
-                await Dispatcher.UIThread.InvokeAsync(() => {
-                    foreach (var join in joinz) join.Update();
-                });
-            });
+            sim.Start();
         }
     }
 }

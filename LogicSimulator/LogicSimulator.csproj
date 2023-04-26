@@ -11,7 +11,9 @@
     <AvaloniaResource Include="Assets\**" />
     <None Remove=".gitignore" />
     <None Remove="Assets\Deleter.png" />
+    <None Remove="Assets\NewItem.png" />
     <None Remove="Assets\Resizer.png" />
+    <None Remove="Assets\TrashCan.png" />
     <None Remove="Assets\vectorasd-logo.ico" />
   </ItemGroup>
 
@@ -32,6 +34,9 @@
   <ItemGroup>
     <Compile Update="Views\LauncherWindow.axaml.cs">
       <DependentUpon>LauncherWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Shapes\NAND_2.axaml.cs">
+      <DependentUpon>NAND_2.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Shapes\Button.axaml.cs">
       <DependentUpon>Button.axaml</DependentUpon>

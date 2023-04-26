@@ -19,7 +19,7 @@ namespace LogicSimulator.ViewModels {
         void FuncCreate() {
             var newy = map.filer.CreateProject();
             current_proj = newy;
-            current_scheme = current_proj.GetFirstCheme();
+            map.current_scheme = current_proj.GetFirstCheme();
             mw.Show();
             mw.Update();
             me?.Close();
@@ -43,7 +43,7 @@ namespace LogicSimulator.ViewModels {
             if (src is not TextBlock tb || tb.Tag is not Project proj) return;
 
             current_proj = proj;
-            current_scheme = current_proj.GetFirstCheme();
+            map.current_scheme = current_proj.GetFirstCheme();
             mw.Show();
             mw.Update();
             me?.Close();

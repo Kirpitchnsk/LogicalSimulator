@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Avalonia.Rendering.SceneGraph;
+using LogicSimulator.ViewModels;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace LogicSimulator.Models {
@@ -8,7 +12,7 @@ namespace LogicSimulator.Models {
         public long Created;
         public long Modified;
 
-        public List<Scheme> schemes = new();
+        public ObservableCollection<Scheme> schemes = new();
         public List<string> scheme_files = new();
         public string FileName { get; }
 
@@ -17,6 +21,7 @@ namespace LogicSimulator.Models {
             Created = Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             FileName = FileHandler.GetProjectFileName();
             CreateScheme();
+            loaded = true;
         }
 
         public Project(string fileName, object data) { // Импорт
@@ -53,6 +58,21 @@ namespace LogicSimulator.Models {
             scheme_files.Add(scheme.FileName);
             Save();
             return scheme;
+        }
+        public Scheme AddScheme(Scheme? prev) {
+            var scheme = new Scheme(this);
+            int pos = prev == null ? 0 : schemes.IndexOf(prev) + 1;
+            schemes.Insert(pos, scheme);
+            scheme.Save();
+            scheme_files.Insert(pos, scheme.FileName);
+            Save();
+            return scheme;
+        }
+        public void RemoveScheme(Scheme me) {
+            schemes.Remove(me);
+            scheme_files.Remove(me.FileName);
+            Save();
+            FileHandler.RemoveScheme(me);
         }
 
         bool loaded = false;
