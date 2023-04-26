@@ -368,6 +368,7 @@ namespace LogicSimulator.Models {
         }
 
         public void ImportScheme(Scheme current_scheme, Canvas canv) {
+            sim.Stop();
             sim.lock_sim = true;
 
             RemoveAll();
@@ -403,6 +404,7 @@ namespace LogicSimulator.Models {
 
             sim.Import(current_scheme.states);
             sim.lock_sim = false;
+            sim.Start();
         }
     }
 }
