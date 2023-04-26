@@ -104,5 +104,11 @@ namespace LogicSimulator.Models {
             outs = state.ToList();
             outs2 = Enumerable.Repeat(false, state.Length).ToList();
         }
+        public void Clear() {
+            outs = new() { false };
+            outs2 = new() { false };
+            items.Clear();
+            ids.Clear();
+        }
     }
 }

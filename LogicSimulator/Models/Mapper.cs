@@ -72,6 +72,7 @@ namespace LogicSimulator.Models {
         }
         public void RemoveAll() {
             foreach (var item in items.ToArray()) RemoveItem(item);
+            sim.Clear();
         }
 
         /*
