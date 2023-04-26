@@ -112,7 +112,7 @@ namespace LogicSimulator.ViewModels {
          * Обработка той самой панели со схемами проекта
          */
 
-        Border? cur_border;
+        Grid? cur_grid;
         TextBlock? old_b_child;
         object? old_b_child_tag;
         string? prev_scheme_name;
@@ -127,25 +127,30 @@ namespace LogicSimulator.ViewModels {
             var src = (Control?) e.Source;
 
             if (src is ContentPresenter cp && cp.Child is Border bord) src = bord;
-            if (src is Border bord2 && bord2.Child is TextBlock tb2) src = tb2;
+            if (src is Border bord2 && bord2.Child is Grid g2) src = g2;
+            if (src is Grid g3 && g3.Children[0] is TextBlock tb2) src = tb2;
 
             if (src is not TextBlock tb) return;
 
             var p = tb.Parent;
-            if (p == null || p is not Border b) return;
+            if (p == null) return;
 
-            if (cur_border != null && old_b_child != null) cur_border.Child = old_b_child;
-            cur_border = b;
+            if (old_b_child != null)
+                if (cur_grid != null) cur_grid.Children[0] = old_b_child;
+
+            if (p is not Grid g) return;
+            cur_grid = g;
+
             old_b_child = tb;
             old_b_child_tag = tb.Tag;
             prev_scheme_name = tb.Text;
 
             var newy = new TextBox { Text = tb.Text }; // Изи блиц-транcформация в одну строчку ;'-}
-            
+
             // Log.Write("Tag: " + tb.Tag);
-            b.Child = newy;
+            cur_grid.Children[0] = newy;
             //Log.Write("Tag: " + tb.Tag); // КААААК?!?!?!? Почему пропажа предка удаляет Tag?!
-            
+
             newy.KeyUp += (object? sender, KeyEventArgs e) => {
                 if (e.Key != Key.Return) return;
 
@@ -155,8 +160,8 @@ namespace LogicSimulator.ViewModels {
                     else if (old_b_child_tag is Scheme scheme) scheme.ChangeName(newy.Text);
                 }
 
-                b.Child = tb;
-                cur_border = null; old_b_child = null;
+                cur_grid.Children[0] = tb;
+                cur_grid = null; old_b_child = null;
             };
         }
 
@@ -178,9 +183,11 @@ namespace LogicSimulator.ViewModels {
          */
 
         public void FuncComm(string Comm) {
-            Log.Write("Comm: " + Comm);
+            // Log.Write("Comm: " + Comm);
             switch (Comm) {
             case "Create":
+                new LauncherWindow().Show();
+                mw?.Hide();
                 break;
             case "Open":
                 new LauncherWindow().Show();
