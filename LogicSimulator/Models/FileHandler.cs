@@ -1,6 +1,7 @@
 using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.IO;
 
@@ -73,6 +74,12 @@ namespace LogicSimulator.Models {
         public Project[] GetSortedProjects() {
             projects.Sort();
             return projects.ToArray();
+        }
+
+
+
+        public static void RemoveScheme(Scheme me) {
+            File.Delete(dir + me.FileName);
         }
     }
 }

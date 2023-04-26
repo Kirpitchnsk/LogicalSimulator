@@ -8,6 +8,7 @@ using LogicSimulator.Views.Shapes;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Reactive;
@@ -49,6 +50,7 @@ namespace LogicSimulator.ViewModels {
         public MainWindowViewModel() { // Если я буду Window mw передавать через этот конструктор, то предварительный просмотр снова порвёт смачно XD
             Log.Mwvm = this;
             Comm = ReactiveCommand.Create<string, Unit>(n => { FuncComm(n); return new Unit(); });
+            NewItem = ReactiveCommand.Create<Unit, Unit>(_ => { FuncNewItem(); return new Unit(); });
 
             /* Так не работает :/
             var app = Application.Current;
@@ -60,12 +62,11 @@ namespace LogicSimulator.ViewModels {
         }
 
         private Window? mw;
-        private Canvas? canv;
         public void AddWindow(Window window) {
             var canv = window.Find<Canvas>("Canvas");
 
             mw = window;
-            this.canv = canv;
+            map.canv = canv;
             if (canv == null) return; // Такого не бывает
 
             canv.Children.Add(map.Marker);
@@ -119,7 +120,7 @@ namespace LogicSimulator.ViewModels {
 
         public static string ProjName { get => current_proj == null ? "???" : current_proj.Name; }
 
-        public static List<Scheme> Schemes { get => current_proj == null ? new() : current_proj.schemes; }
+        public static ObservableCollection<Scheme> Schemes { get => current_proj == null ? new() : current_proj.schemes; }
 
 
 
@@ -171,8 +172,7 @@ namespace LogicSimulator.ViewModels {
         public void Update() {
             Log.Write("Текущий проект:\n" + current_proj);
 
-            if (current_scheme == null || canv == null) throw new Exception("Такого не бывает");
-            map.ImportScheme(current_scheme, canv);
+            map.ImportScheme();
 
             PropertyChanged?.Invoke(this, new(nameof(ProjName)));
             PropertyChanged?.Invoke(this, new(nameof(Schemes)));
@@ -194,7 +194,7 @@ namespace LogicSimulator.ViewModels {
                 mw?.Hide();
                 break;
             case "Save":
-                if (current_scheme != null) map.Export(current_scheme);
+                map.Export();
                 break;
             case "Exit":
                 mw?.Close();
@@ -203,5 +203,11 @@ namespace LogicSimulator.ViewModels {
         }
 
         public ReactiveCommand<string, Unit> Comm { get; }
+
+        static void FuncNewItem() {
+            current_proj?.AddScheme(null);
+        }
+
+        public ReactiveCommand<Unit, Unit> NewItem { get; }
     }
 }
