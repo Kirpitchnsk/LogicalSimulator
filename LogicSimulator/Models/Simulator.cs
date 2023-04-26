@@ -42,6 +42,7 @@ namespace LogicSimulator.Models {
             task = Task.Run(async () => {
                 for (; ; ) {
                     await Task.Delay(1000 / 1000); // Повышааааааееееем оборооооооотыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыы!!! 60 герц... Нет, все 1000! ;'-}
+                    
                     try { Tick(); } catch (Exception e) { Log.Write("Logical crush: " + e); continue; }
 
                     if (stop_sim) return;

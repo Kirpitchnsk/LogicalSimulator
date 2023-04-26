@@ -29,7 +29,9 @@ namespace LogicSimulator.Views.Shapes {
             if (list.Count != count) throw new Exception("Чё?!"); // У этой фигуры всегда count пинов
             pins = list.ToArray();
 
-            joins = new JoinedItems?[count];
+            joins_in = new JoinedItems?[CountIns];
+            joins_out = new List<JoinedItems>[CountOuts];
+            for (int i = 0; i < CountOuts; i++) joins_out[i] = new();
         }
 
         public void Move(Point pos) {
@@ -129,43 +131,53 @@ namespace LogicSimulator.Views.Shapes {
          * Обработка соединений
          */
 
-        protected JoinedItems?[] joins;
+        protected JoinedItems?[] joins_in;
+        protected List<JoinedItems>[] joins_out;
 
         public void AddJoin(JoinedItems join) {
-            if (join.A.parent == this) {
-                int n = join.A.num;
-                joins[n]?.Delete();
-                joins[n] = join;
-            }
-            if (join.B.parent == this) {
-                int n = join.B.num;
-                joins[n]?.Delete();
-                joins[n] = join;
+            for (int i = 0; i < 2; i++) {
+                var dist = i == 0 ? join.A : join.B;
+                if (dist.parent == this) {
+                    int n = dist.num;
+                    if (n < CountIns) {
+                        joins_in[n]?.Delete();
+                        joins_in[n] = join;
+                    } else joins_out[n - CountIns].Add(join);
+                }
             }
             skip_upd = false;
         }
 
         public void RemoveJoin(JoinedItems join) {
-            if (join.A.parent == this) joins[join.A.num] = null;
-            if (join.B.parent == this) joins[join.B.num] = null;
+            for (int i = 0; i < 2; i++) {
+                var dist = i == 0 ? join.A : join.B;
+                if (dist.parent == this) {
+                    int n = dist.num;
+                    if (n < CountIns) joins_in[n] = null;
+                    else joins_out[n - CountIns].Remove(join);
+                }
+            }
             skip_upd = false;
         }
 
         public void UpdateJoins(bool global) {
-            foreach (var join in joins)
-                if (join != null && (!global || join.A.parent == this)) join.Update();
+            foreach (var join in joins_in) join?.Update();
+            foreach (var joins in joins_out)
+                foreach (var join in joins) join.Update();
         }
 
         public void ClearJoins() {
-            foreach (var join in joins) join?.Delete();
+            foreach (var join in joins_in) join?.Delete();
+            foreach (var joins in joins_out)
+                foreach (var join in joins.ToArray()) join.Delete();
         }
 
         public void SetJoinColor(int o_num, bool value) {
-            var join = joins[o_num + CountIns];
-            if (join != null)
-                Dispatcher.UIThread.InvokeAsync(() => { // Ох, знакомая головная боль с андроида, где даже Toast за пределами главного потока не вызовешь :/ XD :D
+            var joins = joins_out[o_num];
+            Dispatcher.UIThread.InvokeAsync(() => { // Ох, знакомая головная боль с андроида, где даже Toast за пределами главного потока не вызовешь :/ XD :D
+                foreach(var join in joins)
                     join.line.Stroke = value ? Brushes.Lime : Brushes.DarkGray;
-                });
+            });
         }
 
         /*
@@ -197,7 +209,7 @@ namespace LogicSimulator.Views.Shapes {
 
         public Point GetPinPos(int n) {
             // var pin = pins[n];
-            // return pin.Center(ref_point); // Смотрите Utils ;'-} Там круто сделан метод
+            // return pin.Center(ref_point); // Смотрите Utils ;'-} Там круто сделан метод (но он по факту и оказался причиной бага, т.к. TransformedBounds ОПАЗДЫВАААААЕЕЕЕЕЕЕЕЕЕЕЕЕЕТ!)
             var m = ellipse_margins[n];
             double R2 = EllipseSize / 2;
             return new Point(Margin.Left + m.Left + R2, Margin.Top + m.Top + R2);
@@ -214,7 +226,7 @@ namespace LogicSimulator.Views.Shapes {
 
             int ins = CountIns;
             for (int i = 0; i < ins; i++) {
-                var join = joins[i];
+                var join = joins_in[i];
                 if (join == null) { me.ins[i] = 0; continue; }
 
                 if (join.A.parent == this) {
@@ -252,10 +264,7 @@ namespace LogicSimulator.Views.Shapes {
 
         public List<object[]> ExportJoins(Dictionary<IGate, int> to_num) {
             List<object[]> res = new();
-            int n = 0, ins = CountIns;
-            foreach (var join in joins) {
-                if (++n > ins) break;
-                if (join == null) continue;
+            foreach (var joins in joins_out) foreach (var join in joins) {
                 Distantor a = join.A, b = join.B;
                 res.Add(new object[] {
                     to_num[a.parent], a.num, a.tag,
