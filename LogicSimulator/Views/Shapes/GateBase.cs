@@ -142,7 +142,11 @@ namespace LogicSimulator.Views.Shapes {
                     if (n < CountIns) {
                         joins_in[n]?.Delete();
                         joins_in[n] = join;
-                    } else joins_out[n - CountIns].Add(join);
+                        // Log.Write("AddIn: " + n);
+                    } else {
+                        joins_out[n - CountIns].Add(join);
+                        // Log.Write("AddOut: " + CountIns);
+                    }
                 }
             }
             skip_upd = false;
@@ -162,8 +166,9 @@ namespace LogicSimulator.Views.Shapes {
 
         public void UpdateJoins(bool global) {
             foreach (var join in joins_in) join?.Update();
-            foreach (var joins in joins_out)
-                foreach (var join in joins) join.Update();
+            if (!global)
+                foreach (var joins in joins_out)
+                    foreach (var join in joins) join.Update();
         }
 
         public void ClearJoins() {

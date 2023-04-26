@@ -9,7 +9,7 @@ namespace LogicSimulator.Models {
         public JoinedItems(Distantor a, Distantor b) {
             A = a; B = b; Update();
             a.parent.AddJoin(this);
-            b.parent.AddJoin(this);
+            if (a.parent != b.parent) b.parent.AddJoin(this);
             arrow_to_join[line] = this;
         }
         public Distantor A { get; set; }

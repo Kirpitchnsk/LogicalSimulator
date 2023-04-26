@@ -390,10 +390,13 @@ namespace LogicSimulator.Models {
 
             List<JoinedItems> joinz = new();
             foreach (var obj in current_scheme.joins) {
-                if (obj is not List<object> @join) { Log.Write("Одно из соединений не того типа: " + obj); continue; }
-                if (@join.Count != 6 ||
-                    @join[0] is not int @num_a || @join[1] is not int @pin_a || @join[2] is not string @tag_a ||
-                    @join[3] is not int @num_b || @join[4] is not int @pin_b || @join[5] is not string @tag_b) { Log.Write("Содержимое списка соединения ошибочно"); continue; }
+                object[] join;
+                if (obj is List<object> @j) join = @j.ToArray();
+                else if (obj is object[] @j2) join = @j2;
+                else { Log.Write("Одно из соединений не того типа: " + obj + " " + Utils.Obj2json(obj)); continue; }
+                if (join.Length != 6 ||
+                    join[0] is not int @num_a || join[1] is not int @pin_a || join[2] is not string @tag_a ||
+                    join[3] is not int @num_b || join[4] is not int @pin_b || join[5] is not string @tag_b) { Log.Write("Содержимое списка соединения ошибочно"); continue; }
 
                 var newy = new JoinedItems(new(items_arr[@num_a], @pin_a, tag_a), new(items_arr[@num_b], @pin_b, tag_b));
                 canv.Children.Add(newy.line);

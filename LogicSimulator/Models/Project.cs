@@ -17,6 +17,7 @@ namespace LogicSimulator.Models {
             Created = Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             FileName = FileHandler.GetProjectFileName();
             CreateScheme();
+            loaded = true;
         }
 
         public Project(string fileName, object data) { // Импорт
