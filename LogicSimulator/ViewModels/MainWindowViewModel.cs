@@ -6,7 +6,6 @@ using LogicSimulator.Models;
 using LogicSimulator.Views;
 using LogicSimulator.Views.Shapes;
 using ReactiveUI;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;

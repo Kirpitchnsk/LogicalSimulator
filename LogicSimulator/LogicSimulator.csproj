@@ -35,6 +35,9 @@
     <Compile Update="Views\LauncherWindow.axaml.cs">
       <DependentUpon>LauncherWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Shapes\NAND_2.axaml.cs">
+      <DependentUpon>NAND_2.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Shapes\Button.axaml.cs">
       <DependentUpon>Button.axaml</DependentUpon>
     </Compile>

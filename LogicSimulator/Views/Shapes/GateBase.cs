@@ -125,6 +125,9 @@ namespace LogicSimulator.Views.Shapes {
             PropertyChanged?.Invoke(this, new(nameof(ImageMargins)));
 
             PropertyChanged?.Invoke(this, new("ButtonSize"));
+            PropertyChanged?.Invoke(this, new("InvertorSize"));
+            PropertyChanged?.Invoke(this, new("InvertorStrokeSize"));
+            PropertyChanged?.Invoke(this, new("InvertorMargin"));
         }
 
         /*

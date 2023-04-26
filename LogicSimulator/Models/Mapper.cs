@@ -35,6 +35,7 @@ namespace LogicSimulator.Models {
                 5 => new Switch(),
                 6 => new Button(),
                 7 => new LightBulb(),
+                8 => new NAND_2(),
                 _ => new AND_2(),
             };
         }
@@ -48,6 +49,7 @@ namespace LogicSimulator.Models {
             CreateItem(5),
             CreateItem(6),
             CreateItem(7),
+            CreateItem(8),
         };
 
         public IGate GenSelectedItem() => CreateItem(selected_item);
