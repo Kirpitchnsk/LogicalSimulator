@@ -163,7 +163,7 @@ namespace LogicSimulator.Models {
             case 5 or 6 or 7:
                 if (marker_circle == null) break;
                 var gate = GetGate(marker_circle) ?? throw new Exception("Чё?!"); // Такого не бывает
-                start_dist = gate.GetPin(marker_circle, FindCanvas());
+                start_dist = gate.GetPin(marker_circle);
 
                 var circle_pos = start_dist.GetPos();
                 marker.StartPoint = marker.EndPoint = circle_pos;
@@ -293,7 +293,7 @@ namespace LogicSimulator.Models {
                 if (start_dist == null) break;
                 if (marker_circle != null) {
                     var gate = GetGate(marker_circle) ?? throw new Exception("Чё?!"); // Такого не бывает
-                    var end_dist = gate.GetPin(marker_circle, FindCanvas());
+                    var end_dist = gate.GetPin(marker_circle);
                     // Log.Write("Стартовый элемент: " + start_dist.parent + " (" + start_dist.GetPos() + ")");
                     // Log.Write("Конечный  элемент: " + end_dist.parent   + " (" + end_dist.GetPos()   + ")");
                     var newy = new JoinedItems(start_dist, end_dist);
@@ -307,7 +307,7 @@ namespace LogicSimulator.Models {
                 JoinedItems.arrow_to_join.TryGetValue(old_join, out var @join);
                 if (marker_circle != null && @join != null) {
                     var gate = GetGate(marker_circle) ?? throw new Exception("Чё?!"); // Такого не бывает
-                    var p = gate.GetPin(marker_circle, FindCanvas());
+                    var p = gate.GetPin(marker_circle);
                     @join.Delete();
 
                     var newy = join_start ? new JoinedItems(@join.A, p) : new JoinedItems(p, @join.B);
@@ -393,20 +393,15 @@ namespace LogicSimulator.Models {
                     @join[0] is not int @num_a || @join[1] is not int @pin_a || @join[2] is not string @tag_a ||
                     @join[3] is not int @num_b || @join[4] is not int @pin_b || @join[5] is not string @tag_b) { Log.Write("Содержимое списка соединения ошибочно"); continue; }
 
-                var newy = new JoinedItems(new(items_arr[@num_a], @pin_a, canv, tag_a), new(items_arr[@num_b], @pin_b, canv, tag_b));
+                var newy = new JoinedItems(new(items_arr[@num_a], @pin_a, tag_a), new(items_arr[@num_b], @pin_b, tag_b));
                 canv.Children.Add(newy.line);
                 joinz.Add(newy);
             }
 
+            foreach (var join in joinz) join.Update();
+
             sim.Import(current_scheme.states);
             sim.lock_sim = false;
-
-            Task.Run(async () => { // Временный багофикс невидимых линий соединения из-за специфики высчета центров кругов под копотом XD
-                await Task.Delay(50);
-                await Dispatcher.UIThread.InvokeAsync(() => {
-                    foreach (var join in joinz) join.Update();
-                });
-            });
         }
     }
 }

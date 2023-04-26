@@ -96,7 +96,7 @@ namespace LogicSimulator.Views.Shapes {
             List<Thickness> list = new();
             foreach (var pin_line in pins)
                 list.Add(new(n++ < CountIns ? 0 : X, pin_line[0].Y - R2, 0, 0));
-            return list.ToArray();
+            return ellipse_margins = list.ToArray();
         } }
 
 
@@ -172,18 +172,35 @@ namespace LogicSimulator.Views.Shapes {
          * Обработка пинов
          */
 
-        public Distantor GetPin(Ellipse finded, Visual? ref_point) {
+        public Distantor GetPin(Ellipse finded) {
             int n = 0;
             foreach (var pin in pins) {
-                if (pin == finded) return new(GetSelfI, n, ref_point, (string?) finded.Tag ?? "");
+                if (pin == finded) return new(GetSelfI, n, (string?) finded.Tag ?? "");
                 n++;
             }
             throw new Exception("Так не бывает");
         }
 
-        public Point GetPinPos(int n, Visual? ref_point) {
-            var pin = pins[n];
-            return pin.Center(ref_point); // Смотрите Utils ;'-} Там круто сделан метод
+        /* Внимание! TransformedBounds в принципе не обновляется, когда мне это надо, сколько бы времени
+         * не прошло, ПО ЭТОМУ высчет центра окружности через TransformedBounds отстаёт!
+         * По этому от метода Center, что я сделал в Utils, придётся отказаться XD
+         * 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change) {
+            base.OnPropertyChanged(change);
+            if (change.Property.Name == "TransformedBounds")
+                Log.Write("Что-то изменилось " + change.NewValue.Value);
+            else
+                Log.Write("Что-то изменилось " + change.Property.Name + " " + change.NewValue.Value);
+        }*/
+
+        Thickness[] ellipse_margins = Array.Empty<Thickness>();
+
+        public Point GetPinPos(int n) {
+            // var pin = pins[n];
+            // return pin.Center(ref_point); // Смотрите Utils ;'-} Там круто сделан метод
+            var m = ellipse_margins[n];
+            double R2 = EllipseSize / 2;
+            return new Point(Margin.Left + m.Left + R2, Margin.Top + m.Top + R2);
         }
 
         /*

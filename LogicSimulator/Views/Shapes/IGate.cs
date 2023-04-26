@@ -16,8 +16,8 @@ namespace LogicSimulator.Views.Shapes {
         public void Move(Point pos);
         public void Resize(Size size, bool global);
 
-        public Distantor GetPin(Ellipse finded, Visual? ref_point);
-        public Point GetPinPos(int n, Visual? ref_point);
+        public Distantor GetPin(Ellipse finded);
+        public Point GetPinPos(int n);
 
         public void AddJoin(JoinedItems join);
         public void RemoveJoin(JoinedItems join);

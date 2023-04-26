@@ -24,7 +24,7 @@ namespace LogicSimulator.ViewModels {
         public static void Write(string message, bool without_update = false) {
             if (!without_update) {
                 foreach (var mess in message.Split('\n')) logs.Add(mess);
-                while (logs.Count > 50) logs.RemoveAt(0);
+                while (logs.Count > 45) logs.RemoveAt(0);
 
                 if (Mwvm != null) Mwvm.Logg = string.Join('\n', logs);
             }
