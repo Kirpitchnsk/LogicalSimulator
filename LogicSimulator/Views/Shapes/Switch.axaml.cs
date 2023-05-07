@@ -30,7 +30,7 @@ namespace LogicSimulator.Views.Shapes {
 
         readonly Border border;
         public Switch() : base() {
-            if (LogicalChildren[0].LogicalChildren[1] is not Border b) throw new Exception("Такого не бывает");
+            if (LogicalChildren[0].LogicalChildren[0] is not Border b) throw new Exception("Такого не бывает");
             border = b;
         }
 

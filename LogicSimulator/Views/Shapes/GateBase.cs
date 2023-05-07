@@ -18,6 +18,7 @@ namespace LogicSimulator.Views.Shapes {
         protected abstract void Init();
         protected abstract int[][] Sides { get; }
 
+        protected Line[] line_arr;
         protected Ellipse[] pins;
 
         protected bool use_top;
@@ -46,15 +47,30 @@ namespace LogicSimulator.Views.Shapes {
 
             int count = ins + outs;
 
-            List<Ellipse> list = new();
-            foreach (var logic in LogicalChildren[0].LogicalChildren)
-                if (logic is Ellipse @ellipse) list.Add(@ellipse);
-            if (list.Count != count) throw new Exception("Чё?!"); // У этой фигуры всегда count пинов
-            pins = list.ToArray();
+            var canv = (Canvas) LogicalChildren[0];
+            List<Line> list = new();
+            List<Ellipse> list2 = new();
 
-            joins_in = new JoinedItems?[CountIns];
-            joins_out = new List<JoinedItems>[CountOuts];
-            for (int i = 0; i < CountOuts; i++) joins_out[i] = new();
+            foreach (var side in sides)
+                foreach (var type in side) {
+                    if (type < 0) continue;
+
+                    var newy = new Line() { Tag = "Pin", Stroke = Brushes.Gray };
+                    list.Add(newy);
+                    canv.Children.Add(newy);
+
+                    var newy2 = new Ellipse() { Tag = type == 0 ? "In" : type == 1 ? "Out" : "IO", Stroke = Brushes.Gray, Fill = new SolidColorBrush(Color.Parse("#0000")) };
+                    list2.Add(newy2);
+                    canv.Children.Add(newy2);
+                }
+            line_arr = list.ToArray();
+            pins = list2.ToArray();
+
+            joins_in = new JoinedItems?[ins];
+            joins_out = new List<JoinedItems>[outs];
+            for (int i = 0; i < outs; i++) joins_out[i] = new();
+
+            MyRecalcSizes();
         }
 
         /*
@@ -181,16 +197,11 @@ namespace LogicSimulator.Views.Shapes {
 
         protected void RecalcSizes() {
             // Log.Write("Size: " + width + " " + height);
-            PropertyChanged?.Invoke(this, new(nameof(EllipseSize)));
             PropertyChanged?.Invoke(this, new(nameof(BodyStrokeSize)));
-            PropertyChanged?.Invoke(this, new(nameof(EllipseStrokeSize)));
-            PropertyChanged?.Invoke(this, new(nameof(PinStrokeSize)));
             PropertyChanged?.Invoke(this, new(nameof(BodyMargin)));
             PropertyChanged?.Invoke(this, new(nameof(BodyWidth)));
             PropertyChanged?.Invoke(this, new(nameof(BodyHeight)));
             PropertyChanged?.Invoke(this, new(nameof(BodyRadius)));
-            PropertyChanged?.Invoke(this, new(nameof(EllipseMargins)));
-            PropertyChanged?.Invoke(this, new(nameof(PinPoints)));
             PropertyChanged?.Invoke(this, new(nameof(UC_Width)));
             PropertyChanged?.Invoke(this, new(nameof(UC_Height)));
             PropertyChanged?.Invoke(this, new(nameof(FontSizze)));
@@ -201,6 +212,30 @@ namespace LogicSimulator.Views.Shapes {
             PropertyChanged?.Invoke(this, new("InvertorSize"));
             PropertyChanged?.Invoke(this, new("InvertorStrokeSize"));
             PropertyChanged?.Invoke(this, new("InvertorMargin"));
+
+            MyRecalcSizes();
+        }
+
+        protected void MyRecalcSizes() {
+            var pin_points = PinPoints;
+            var pin_stroke_size = PinStrokeSize;
+            int n = 0;
+            foreach (var line in line_arr) {
+                line.StartPoint = pin_points[n][0];
+                line.EndPoint = pin_points[n++][1];
+                line.StrokeThickness = pin_stroke_size;
+            }
+
+            n = 0;
+            var ellipse_margin = EllipseMargins;
+            var ellipse_size = EllipseSize;
+            var ellipse_stroke_size = EllipseStrokeSize;
+            foreach (var pin in pins) {
+                pin.Margin = ellipse_margin[n++];
+                pin.Width = ellipse_size;
+                pin.Height = ellipse_size;
+                pin.StrokeThickness = ellipse_stroke_size;
+            }
         }
 
         /*

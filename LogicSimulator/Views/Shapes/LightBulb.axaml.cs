@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -12,10 +11,10 @@ namespace LogicSimulator.Views.Shapes {
         public override UserControl GetSelf() => this;
         protected override IGate GetSelfI => this;
         protected override int[][] Sides => new int[][] {
-            System.Array.Empty<int>(),
+            Array.Empty<int>(),
             new int[] { 0 },
-            System.Array.Empty<int>(),
-            System.Array.Empty<int>()
+            Array.Empty<int>(),
+            Array.Empty<int>()
         };
 
         protected override void Init() {
@@ -27,7 +26,7 @@ namespace LogicSimulator.Views.Shapes {
 
         readonly Border border;
         public LightBulb(): base() {
-            if (LogicalChildren[0].LogicalChildren[1] is not Border b) throw new Exception("Такого не бывает");
+            if (LogicalChildren[0].LogicalChildren[0] is not Border b) throw new Exception("Такого не бывает");
             border = b;
         }
 
