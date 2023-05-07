@@ -167,9 +167,6 @@ namespace LogicSimulator.Models {
         bool join_start;
         bool delete_join = false;
 
-        Point camera_pos;
-        Point old_camera_pos;
-
         public void Press(Control item, Point pos) {
             // Log.Write("PointerPressed: " + item.GetType().Name + " pos: " + pos);
 
@@ -183,7 +180,6 @@ namespace LogicSimulator.Models {
 
             switch (mode) {
             case 1:
-                old_camera_pos = camera_pos;
                 SaveAllPoses();
                 break;
             case 3:
@@ -278,10 +274,9 @@ namespace LogicSimulator.Models {
 
             switch (mode) {
             case 1:
-                camera_pos = old_camera_pos + delta;
                 foreach (var item_ in items) {
                     var pose = item_.GetPose();
-                    item_.Move(pose + camera_pos);
+                    item_.Move(pose + delta, true);
                 }
                 break;
             case 2:
@@ -292,7 +287,7 @@ namespace LogicSimulator.Models {
             case 3:
                 if (moved_item == null) break;
                 var new_size = item_old_size + new Size(delta.X, delta.Y);
-                moved_item.Resize(new_size, false);
+                moved_item.Resize(new_size);
                 break;
             case 5 or 6 or 7:
                 var end_pos = marker_circle == null ? pos : marker_circle.Center(canv);
@@ -363,16 +358,28 @@ namespace LogicSimulator.Models {
             if (mode == 4 && moved_item != null) RemoveItem(moved_item);
         }
 
-        public void WheelMove(Control item, double move) {
+        public void WheelMove(Control item, double move, Point pos) {
             // Log.Write("WheelMoved: " + item.GetType().Name + " delta: " + (move > 0 ? 1 : -1));
             int mode = CalcMode((string?) item.Tag);
+            double scale = move > 0 ? 1.1 : 1 / 1.1;
+            double inv_scale = move > 0 ? 1 / 1.1 : 1.1;
 
             switch (mode) {
+            case 1:
+                foreach (var gate in items) {
+                    gate.ChangeScale(scale, true);
+
+                    var item_pos = gate.GetPos();
+                    var delta = item_pos - pos;
+                    delta *= scale;
+                    var new_pos = delta + pos;
+                    gate.Move(new_pos, true);
+                }
+                break;
             case 2:
-                var gate = GetGate(item);
-                if (gate == null) return;
-                gate.ChangeScale(move > 0 ? 1 / 1.1 : 1.1);
-                Log.Write("Gate: " + gate);
+                var gate2 = GetGate(item);
+                if (gate2 == null) return;
+                gate2.ChangeScale(inv_scale);
                 break;
             }
         }

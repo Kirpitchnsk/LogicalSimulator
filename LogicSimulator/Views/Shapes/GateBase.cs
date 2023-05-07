@@ -34,24 +34,24 @@ namespace LogicSimulator.Views.Shapes {
             for (int i = 0; i < CountOuts; i++) joins_out[i] = new();
         }
 
-        public void Move(Point pos) {
+        public void Move(Point pos, bool global = false) {
             Margin = new(pos.X - UC_Width / 2, pos.Y - UC_Height / 2, 0, 0);
-            UpdateJoins(false);
+            UpdateJoins(global);
         }
 
-        public void Resize(Size size, bool global) {
+        public void Resize(Size size, bool global = false) {
             double limit = (9 + 32) * 2 * (base_size / 25);
             width = size.Width.Max(limit / 3 * (CountIns == 0 || CountOuts == 0 ? 2.25 : 3));
             height = size.Height.Max(limit / 3 * (1.5 + 0.75 * CountIns.Max(CountOuts)));
             RecalcSizes();
             UpdateJoins(global);
-            RecalcSizes();
         }
-        public void ChangeScale(double scale) {
+        public void ChangeScale(double scale, bool global = false) {
             base_size *= scale;
             width *= scale;
             height *= scale;
             RecalcSizes();
+            UpdateJoins(global);
         }
 
         public Point GetPos() => new(Margin.Left + UC_Width/2, Margin.Top + UC_Height / 2);
@@ -300,7 +300,7 @@ namespace LogicSimulator.Views.Shapes {
 
             if (!@dict.TryGetValue("size", out var @value2)) { Log.Write("size-запись элемента не обнаружен"); return; }
             if (@value2 is not Size @size) { Log.Write("Неверный тип size-записи элемента: " + @value2); return; }
-            Resize(@size, false);
+            Resize(@size);
         }
     }
 }

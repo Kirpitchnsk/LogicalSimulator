@@ -93,7 +93,7 @@ namespace LogicSimulator.ViewModels {
                 }
             };
             panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) => {
-                if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y);
+                if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y, e.GetCurrentPoint(canv).Position);
             };
         }
 

@@ -90,7 +90,7 @@ namespace LogicSimulator.Views.Shapes {
 
             if (!@dict.TryGetValue("size", out var @value2)) { Log.Write("size-запись элемента не обнаружен"); return; }
             if (@value2 is not Size @size) { Log.Write("Неверный тип size-записи элемента: " + @value2); return; }
-            Resize(@size, false);
+            Resize(@size);
 
             if (!@dict.TryGetValue("state", out var @value3)) { Log.Write("state-запись элемента не обнаружен"); return; }
             if (@value3 is not bool @state) { Log.Write("Неверный тип state-записи элемента: " + @value3); return; }
