@@ -54,30 +54,11 @@ namespace LogicSimulator.Views.Shapes {
          * Кастомный экспорт и импорт
          */
 
-        public override object Export() {
-            return new Dictionary<string, object> {
-                ["id"] = TypeId,
-                ["pos"] = GetPos(),
-                ["size"] = GetBodySize(),
-                ["state"] = my_state,
-                ["base_size"] = base_size
-            };
-        }
+        public override Dictionary<string, object> ExtraExport() => new() { ["state"] = my_state };
 
-        public override void Import(Dictionary<string, object> dict) {
-            if (!@dict.TryGetValue("pos", out var @value)) { Log.Write("pos-запись элемента не обнаружен"); return; }
-            if (@value is not Point @pos) { Log.Write("Неверный тип pos-записи элемента: " + @value); return; }
-            Move(@pos);
-
-            if (@dict.TryGetValue("base_size", out var @value3))
-                if (@value3 is double @b_size) base_size = @b_size;
-
-            if (!@dict.TryGetValue("size", out var @value2)) { Log.Write("size-запись элемента не обнаружен"); return; }
-            if (@value2 is not Size @size) { Log.Write("Неверный тип size-записи элемента: " + @value2); return; }
-            Resize(@size);
-
-            if (!@dict.TryGetValue("state", out var @value4)) { Log.Write("state-запись элемента не обнаружен"); return; }
-            if (@value4 is not bool @state) { Log.Write("Неверный тип state-записи элемента: " + @value3); return; }
+        public override void ExtraImport(string key, object extra) {
+            if (key != "state") { Log.Write(key + "-запись элемента не поддерживается"); return; }
+            if (extra is not bool @state) { Log.Write("Неверный тип state-записи элемента: " + extra); return; }
             my_state = @state;
             if (my_state) border.Background = new SolidColorBrush(Color.Parse("#7d1414"));
         }

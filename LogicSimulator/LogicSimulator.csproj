@@ -51,6 +51,9 @@
     <Compile Update="Views\Shapes\SuM.axaml.cs">
       <DependentUpon>SuM.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Shapes\FlipFlop.axaml.cs">
+      <DependentUpon>FlipFlop.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Shapes\XOR_2.axaml.cs">
       <DependentUpon>XOR_2.axaml</DependentUpon>
     </Compile>

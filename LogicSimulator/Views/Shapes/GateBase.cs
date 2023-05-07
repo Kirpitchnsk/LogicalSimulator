@@ -1,7 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
 using LogicSimulator.Models;
@@ -394,14 +393,18 @@ namespace LogicSimulator.Views.Shapes {
 
         public abstract int TypeId { get; }
 
-        public virtual object Export() {
-            return new Dictionary<string, object> {
+        public object Export() {
+            var res = new Dictionary<string, object> {
                 ["id"] = TypeId,
                 ["pos"] = GetPos(),
                 ["size"] = GetBodySize(),
                 ["base_size"] = base_size
             };
+            var res2 = ExtraExport();
+            if (res2 != null) foreach (var item in res2) res.Add(item.Key, item.Value);
+            return res;
         }
+        public virtual Dictionary<string, object>? ExtraExport() => null;
 
         public List<object[]> ExportJoins(Dictionary<IGate, int> to_num) {
             List<object[]> res = new();
@@ -415,17 +418,41 @@ namespace LogicSimulator.Views.Shapes {
             return res;
         }
 
-        public virtual void Import(Dictionary<string, object> dict) {
-            if (!@dict.TryGetValue("pos", out var @value)) { Log.Write("pos-запись элемента не обнаружен"); return; }
-            if (@value is not Point @pos) { Log.Write("Неверный тип pos-записи элемента: " + @value); return; }
-            Move(@pos);
-
-            if (@dict.TryGetValue("base_size", out var @value3))
-                if (@value3 is double @b_size) base_size = @b_size;
-
-            if (!@dict.TryGetValue("size", out var @value2)) { Log.Write("size-запись элемента не обнаружен"); return; }
-            if (@value2 is not Size @size) { Log.Write("Неверный тип size-записи элемента: " + @value2); return; }
-            Resize(@size);
+        public void Import(Dictionary<string, object> dict) {
+            double new_b_size = 1;
+            Point new_pos = GetPos();
+            Size new_size = GetSize();
+            foreach (var item in dict) {
+                object value = item.Value;
+                switch (item.Key) {
+                case "id":
+                    if (value is int @id) {
+                        if (@id != TypeId) throw new ArgumentException("ВНИМАНИЕ! Пришёл не верный id: " + @id + " Ожидалось: " + TypeId);
+                    } else Log.Write("Неверный тип id-записи элемента: " + value);
+                    break;
+                case "pos":
+                    if (value is Point @pos) new_pos = @pos;
+                    else Log.Write("Неверный тип pos-записи элемента: " + value);
+                    break;
+                case "base_size":
+                    if (value is double @b_size) new_b_size = @b_size;
+                    else Log.Write("Неверный тип base_size-записи элемента: " + value);
+                    break;
+                case "size":
+                    if (value is Size @size) new_size = @size;
+                    else Log.Write("Неверный тип size-записи элемента: " + value);
+                    break;
+                default:
+                    ExtraImport(item.Key, value);
+                    break;
+                }
+            }
+            base_size = new_b_size;
+            Move(new_pos);
+            Resize(new_size);
+        }
+        public virtual void ExtraImport(string key, object extra) {
+            Log.Write(key + "-запись элемента не поддерживается");
         }
     }
 }
