@@ -204,5 +204,7 @@ namespace LogicSimulator.ViewModels {
         }
 
         public ReactiveCommand<Unit, Unit> NewItem { get; }
+
+        public static bool LockSelfConnect { get => map.lock_self_connect; set => map.lock_self_connect = value; }
     }
 }

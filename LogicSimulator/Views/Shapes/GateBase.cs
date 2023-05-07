@@ -419,7 +419,7 @@ namespace LogicSimulator.Views.Shapes {
         }
 
         public void Import(Dictionary<string, object> dict) {
-            double new_b_size = 1;
+            double new_b_size = base_size;
             Point new_pos = GetPos();
             Size new_size = GetSize();
             foreach (var item in dict) {

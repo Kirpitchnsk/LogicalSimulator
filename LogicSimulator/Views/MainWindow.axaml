@@ -40,6 +40,9 @@
 				<MenuItem Header="Сохранить текущую схему" Command="{Binding Comm}" CommandParameter="Save"/>
 				<MenuItem Header="Выйти" Command="{Binding Comm}" CommandParameter="Exit"/>
 			</MenuItem>
+			<MenuItem Header="Настройки">
+				<CheckBox IsChecked="{Binding LockSelfConnect}">Блокировать самоподключку</CheckBox>
+			</MenuItem>
 		</Menu>
 		<Grid ColumnDefinitions="*,3*,*">
 			<Panel Grid.Column="1">

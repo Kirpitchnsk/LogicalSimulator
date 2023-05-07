@@ -105,7 +105,7 @@ namespace LogicSimulator.Models {
             AddToMap(item.GetSelf());
         }
         public void RemoveItem(IGate item) {
-            if (moved_item == marked_item) {
+            if (marked_item != null) {
                 marked_item = null;
                 UpdateMarker();
             }
@@ -199,6 +199,8 @@ namespace LogicSimulator.Models {
         bool join_start;
         bool delete_join = false;
 
+        public bool lock_self_connect = true;
+
         public void Press(Control item, Point pos) {
             // Log.Write("PointerPressed: " + item.GetType().Name + " pos: " + pos);
 
@@ -281,7 +283,8 @@ namespace LogicSimulator.Models {
             string[] mods = new[] { "In", "Out", "IO" };
             var tag = (string?) item.Tag;
             if (IsMode(item, mods) && item is Ellipse @ellipse
-                && !(marker_mode == 5 && tag == "In" || marker_mode == 6 && tag == "Out")) { // То самое место, что не даёт подключить вход ко входу, либо выход к выходу
+                && !(marker_mode == 5 && tag == "In" || marker_mode == 6 && tag == "Out" ||
+                lock_self_connect && moved_item == GetGate(item))) { // То самое место, что не даёт подключить вход ко входу, либо выход к выходу
 
                 if (marker_circle != null && marker_circle != @ellipse) { // На случай моментального перехода курсором с одного кружка на другой
                     marker_circle.Fill = new SolidColorBrush(Color.Parse("#0000"));
@@ -389,6 +392,7 @@ namespace LogicSimulator.Models {
 
             int res_mode = mode;
             mode = 0;
+            moved_item = null;
             return res_mode;
         }
 
@@ -397,9 +401,9 @@ namespace LogicSimulator.Models {
             tap_pos = pos;
 
             switch (mode) {
-            case 4:
+            /* case 4:
                 if (moved_item != null) RemoveItem(moved_item);
-                break;
+                break; */
             case 2 or 8:
                 if (item is Line @line) {
                     if (!JoinedItems.arrow_to_join.TryGetValue(@line, out var @join)) break;
