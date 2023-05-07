@@ -7,6 +7,7 @@ using LogicSimulator.Views.Shapes;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Reactive;
@@ -36,27 +37,14 @@ namespace LogicSimulator.ViewModels {
         }
     }
 
-    public class MainWindowViewModel: ViewModelBase, INotifyPropertyChanged {
+    public class MainWindowViewModel: ViewModelBase {
         private string log = "";
-        public string Logg { get => log; set {
-            // this.RaiseAndSetIfChanged(ref log, value); Почему-то сломался из-за добавления INotifyPropertyChanged
-            if (log == value) return;
-            log = value;
-            PropertyChanged?.Invoke(this, new(nameof(Logg)));
-        } }
+        public string Logg { get => log; set => this.RaiseAndSetIfChanged(ref log, value); }
 
         public MainWindowViewModel() { // Если я буду Window mw передавать через этот конструктор, то предварительный просмотр снова порвёт смачно XD
             Log.Mwvm = this;
             Comm = ReactiveCommand.Create<string, Unit>(n => { FuncComm(n); return new Unit(); });
             NewItem = ReactiveCommand.Create<Unit, Unit>(_ => { FuncNewItem(); return new Unit(); });
-
-            /* Так не работает :/
-            var app = Application.Current;
-            if (app == null) return; // Такого не бывает
-            var life = (IClassicDesktopStyleApplicationLifetime?) app.ApplicationLifetime;
-            if (life == null) return; // Такого не бывает
-            foreach (var w in life.Windows) Log.Write("Window: " + w);
-            Log.Write("Windows: " + life.Windows.Count); */
         }
 
         private Window? mw;
@@ -161,16 +149,15 @@ namespace LogicSimulator.ViewModels {
             };
         }
 
-#pragma warning disable CS0108
-        public event PropertyChangedEventHandler? PropertyChanged;
-#pragma warning restore CS0108
         public void Update() {
             Log.Write("Текущий проект:\n" + current_proj);
 
             map.ImportScheme();
 
-            PropertyChanged?.Invoke(this, new(nameof(ProjName)));
-            PropertyChanged?.Invoke(this, new(nameof(Schemes)));
+            /*this.RaisePropertyChanged(new(nameof(ProjName)));
+            this.RaisePropertyChanged(new(nameof(Schemes)));
+            this.RaisePropertyChanged(new(nameof(Logg)));*/ // А вот это действительно странно ;'-} Хотя даже в этом случае оно несколько тиков глючит
+            if (mw != null) mw.Width++; // ГОРАААААААААААААЗДО больше толку, чем от всех этих НЕРАБОЧИХ через раз RaisePropertyChanged
         }
 
         /*

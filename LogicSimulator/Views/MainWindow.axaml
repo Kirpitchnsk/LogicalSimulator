@@ -71,13 +71,13 @@
 							<Border Classes="b">
 								<Grid ColumnDefinitions="*,auto,auto,auto">
 									<TextBlock Text="{Binding}" Tag="{Binding}"/>
-									<Button Grid.Column="1" Padding="2" Margin="6 -4 4 -4" Command="{Binding Open}">
+									<Button Grid.Column="1" Padding="2" Margin="6 -4 4 -4" Command="{Binding Open}" IsVisible="{Binding CanOpenMe}">
 										<Image Width="24" Height="24" Source="/Assets/Open.png"/>
 									</Button>
 									<Button Grid.Column="2" Padding="2" Margin="0 -4 4 -4" Command="{Binding NewItem}">
 										<Image Width="24" Height="24" Source="/Assets/NewItem.png"/>
 									</Button>
-									<Button Grid.Column="3" Padding="2" Margin="0 -4 0 -4" Command="{Binding Delete}">
+									<Button Grid.Column="3" Padding="2" Margin="0 -4 0 -4" Command="{Binding Delete}" IsVisible="{Binding CanUseSchemeDeleter}">
 										<Image Width="24" Height="24" Source="/Assets/TrashCan.png"/>
 									</Button>
 								</Grid>

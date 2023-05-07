@@ -1,9 +1,6 @@
-﻿using Avalonia.Rendering.SceneGraph;
-using LogicSimulator.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
 
 namespace LogicSimulator.Models {
@@ -73,6 +70,9 @@ namespace LogicSimulator.Models {
             scheme_files.Remove(me.FileName);
             Save();
             FileHandler.RemoveScheme(me);
+        }
+        public void UpdateList() {
+            foreach (var scheme in schemes) scheme.UpdateProps();
         }
 
         bool loaded = false;
