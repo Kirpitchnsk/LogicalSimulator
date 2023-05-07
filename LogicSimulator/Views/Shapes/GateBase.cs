@@ -35,12 +35,12 @@ namespace LogicSimulator.Views.Shapes {
         }
 
         public void Move(Point pos) {
-            Margin = new(pos.X, pos.Y, 0, 0);
+            Margin = new(pos.X - UC_Width / 2, pos.Y - UC_Height / 2, 0, 0);
             UpdateJoins(false);
         }
 
         public void Resize(Size size, bool global) {
-            double limit = (9 + 32) * 2;
+            double limit = (9 + 32) * 2 * (base_size / 25);
             width = size.Width.Max(limit / 3 * (CountIns == 0 || CountOuts == 0 ? 2.25 : 3));
             height = size.Height.Max(limit / 3 * (1.5 + 0.75 * CountIns.Max(CountOuts)));
             RecalcSizes();
@@ -54,9 +54,13 @@ namespace LogicSimulator.Views.Shapes {
             RecalcSizes();
         }
 
-        public Point GetPos() => new(Margin.Left, Margin.Top);
+        public Point GetPos() => new(Margin.Left + UC_Width/2, Margin.Top + UC_Height / 2);
         public Size GetSize() => new(Width, Height);
         public Size GetBodySize() => new(width, height);
+
+        private Point pose;
+        public void SavePose() => pose = GetPos();
+        public Point GetPose() => pose;
 
         /*
          * Обработка размеров внутренностей

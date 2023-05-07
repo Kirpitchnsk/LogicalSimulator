@@ -1,5 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using LogicSimulator.Models;
@@ -88,8 +87,7 @@ namespace LogicSimulator.ViewModels {
                         if (canv == null) return; // Такого не бывает
 
                         var newy = map.GenSelectedItem();
-                        var size = newy.GetSize() / 2;
-                        newy.Move(pos - new Point(size.Width, size.Height));
+                        newy.Move(pos);
                         map.AddItem(newy);
                     }
                 }

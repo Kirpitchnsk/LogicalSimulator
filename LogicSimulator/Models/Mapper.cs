@@ -93,6 +93,10 @@ namespace LogicSimulator.Models {
             sim.Clear();
         }
 
+        private void SaveAllPoses() {
+            foreach (var item in items) item.SavePose();
+        }
+
         /*
          * Определение режима перемещения
          */
@@ -180,6 +184,7 @@ namespace LogicSimulator.Models {
             switch (mode) {
             case 1:
                 old_camera_pos = camera_pos;
+                SaveAllPoses();
                 break;
             case 3:
                 if (moved_item == null) break;
@@ -274,10 +279,10 @@ namespace LogicSimulator.Models {
             switch (mode) {
             case 1:
                 camera_pos = old_camera_pos + delta;
-                Log.Write("canv_pos: " + camera_pos);
-                // new LayoutTransformControl();
-                // new MatrixTransform();
-                // new ScaleTransform();
+                foreach (var item_ in items) {
+                    var pose = item_.GetPose();
+                    item_.Move(pose + camera_pos);
+                }
                 break;
             case 2:
                 if (moved_item == null) break;
@@ -360,10 +365,16 @@ namespace LogicSimulator.Models {
 
         public void WheelMove(Control item, double move) {
             // Log.Write("WheelMoved: " + item.GetType().Name + " delta: " + (move > 0 ? 1 : -1));
-            var gate = GetGate(item);
-            if (gate == null) return;
-            gate.ChangeScale(move > 0 ? 1.1 : 1/1.1);
-            Log.Write("Gate: " + gate);
+            int mode = CalcMode((string?) item.Tag);
+
+            switch (mode) {
+            case 2:
+                var gate = GetGate(item);
+                if (gate == null) return;
+                gate.ChangeScale(move > 0 ? 1 / 1.1 : 1.1);
+                Log.Write("Gate: " + gate);
+                break;
+            }
         }
 
         /*
