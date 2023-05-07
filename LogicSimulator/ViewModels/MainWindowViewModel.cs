@@ -96,6 +96,9 @@ namespace LogicSimulator.ViewModels {
             panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) => {
                 if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y, e.GetCurrentPoint(canv).Position);
             };
+            mw.KeyDown += (object? sender, KeyEventArgs e) => {
+                if (e.Source != null && e.Source is Control @control) map.KeyPressed(@control, e.Key);
+            };
         }
 
         public static IGate[] ItemTypes { get => map.item_types; }

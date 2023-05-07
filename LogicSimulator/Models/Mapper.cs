@@ -10,6 +10,7 @@ using Avalonia.Media;
 using Avalonia.LogicalTree;
 using System.Linq;
 using Button = LogicSimulator.Views.Shapes.Button;
+using Avalonia.Input;
 
 namespace LogicSimulator.Models {
     public class Mapper {
@@ -113,6 +114,10 @@ namespace LogicSimulator.Models {
             AddToMap(item.GetSelf());
         }
         public void RemoveItem(IGate item) {
+            if (moved_item == marked_item) {
+                marked_item = null;
+                UpdateMarker();
+            }
             if (marked_line != null && item.ContainsJoin(marked_line)) {
                 marked_line = null;
                 UpdateMarker();
@@ -207,7 +212,7 @@ namespace LogicSimulator.Models {
             // Log.Write("PointerPressed: " + item.GetType().Name + " pos: " + pos);
 
             UpdateMode(item);
-            Log.Write("new_mode: " + mode);
+            // Log.Write("new_mode: " + mode);
 
             moved_pos = pos;
             moved_item = GetGate(item);
@@ -401,13 +406,7 @@ namespace LogicSimulator.Models {
 
             switch (mode) {
             case 4:
-                if (moved_item == null) break;
-
-                RemoveItem(moved_item);
-                if (moved_item == marked_item) {
-                    marked_item = null;
-                    UpdateMarker();
-                }
+                if (moved_item != null) RemoveItem(moved_item);
                 break;
             case 2 or 8:
                 if (item is Line @line) {
@@ -453,6 +452,30 @@ namespace LogicSimulator.Models {
                 break;
             }
         }
+
+        public void KeyPressed(Control _, Key key) {
+            // Log.Write("KeyPressed: " + item.GetType().Name + " key: " + key);
+            switch (key) {
+            case Key.Up:
+            case Key.Left:
+            case Key.Right:
+            case Key.Down:
+                int dx = key == Key.Left ? -1 : key == Key.Right ? 1 : 0;
+                int dy = key == Key.Up ? -1 : key == Key.Down ? 1 : 0;
+                marked_item?.Move(marked_item.GetPos() + new Point(dx * 10, dy * 10));
+                UpdateMarker();
+                break;
+            case Key.Delete:
+                if (marked_item != null) RemoveItem(marked_item);
+                if (marked_line != null) {
+                    marked_line.Delete();
+                    marked_line = null;
+                    UpdateMarker();
+                }
+                break;
+            }
+        }
+
 
         /*
          * Экспорт и импорт
