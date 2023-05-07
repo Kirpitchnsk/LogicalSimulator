@@ -33,7 +33,7 @@
 	</Window.Styles>
 
 	<DockPanel>
-		<Menu DockPanel.Dock="Top">
+		<Menu DockPanel.Dock="Top" ZIndex="10" Background="White">
 			<MenuItem Header="Файл">
 				<MenuItem Header="Создать" Command="{Binding Comm}" CommandParameter="Create"/>
 				<MenuItem Header="Открыть проект" Command="{Binding Comm}" CommandParameter="Open"/>
@@ -42,6 +42,10 @@
 			</MenuItem>
 		</Menu>
 		<Grid ColumnDefinitions="*,3*,*">
+			<Panel Grid.Column="1">
+				<TextBlock Text="{Binding Logg}" Background="AliceBlue"/>
+				<Canvas Tag="Scene" Name="Canvas" Background="#0000"/>
+			</Panel>
 			<ListBox Items="{Binding ItemTypes}" SelectedIndex="{Binding SelectedItem}">
 				<ListBox.ItemTemplate>
 					<DataTemplate>
@@ -49,12 +53,8 @@
 					</DataTemplate>
 				</ListBox.ItemTemplate>
 			</ListBox>
-			<Panel Grid.Column="1">
-				<TextBlock Text="{Binding Logg}" Background="AliceBlue"/>
-				<Canvas Tag="Scene" Name="Canvas" Background="#0000"/>
-			</Panel>
 			<Grid Grid.Column="2" RowDefinitions="auto,*" DoubleTapped="DTapped">
-				<Border Classes="b" BorderBrush="#4df" Background="#0000">
+				<Border Classes="b" BorderBrush="#4df" Background="White">
 					<Grid ColumnDefinitions="*,auto">
 						<TextBlock Tag="p_name" Text="{Binding ProjName}"/>
 						<Button Grid.Column="1" Padding="2" Margin="6 -4 0 -4" Command="{Binding NewItem}">

@@ -11,17 +11,40 @@ using System.ComponentModel;
 
 namespace LogicSimulator.Views.Shapes {
     public abstract class GateBase: UserControl {
-        public abstract int CountIns { get; }
-        public abstract int CountOuts { get; }
+        public int CountIns { get; private set; }
+        public int CountOuts { get; private set; }
         public abstract UserControl GetSelf();
         protected abstract IGate GetSelfI { get; }
         protected abstract void Init();
+        protected abstract int[][] Sides { get; }
 
         protected Ellipse[] pins;
 
+        protected bool use_top;
+        protected bool use_left;
+        protected bool use_right;
+        protected bool use_bottom;
+
         public GateBase() {
+            var sides = Sides;
+            use_top = sides[0].Length > 0;
+            use_left = sides[1].Length > 0;
+            use_right = sides[2].Length > 0;
+            use_bottom = sides[3].Length > 0;
+            int ins = 0, outs = 0, ios = 0;
+            foreach (var side in sides)
+                foreach (var type in side)
+                    switch (type) {
+                    case 0: ins++; break;
+                    case 1: outs++; break;
+                    case 2: ios++; break;
+                    }
+            CountIns = ins + ios;
+            CountOuts = outs + ios;
+
             Init();
-            int count = CountIns + CountOuts;
+
+            int count = ins + outs;
 
             List<Ellipse> list = new();
             foreach (var logic in LogicalChildren[0].LogicalChildren)
@@ -83,29 +106,60 @@ namespace LogicSimulator.Views.Shapes {
         public double EllipseStrokeSize => BaseFraction * 5;
         public double PinStrokeSize => BaseFraction * 6;
 
-        public Thickness BodyMargin => new(base_size, 0, 0, 0);
+        public Thickness BodyMargin => new(use_left ? base_size : 0, use_top ? base_size : 0, 0, 0);
         public double BodyWidth => width;
         public double BodyHeight => height;
         public CornerRadius BodyRadius => new(width.Min(height) / 3 + BodyStrokeSize.Top);
 
-        public double UC_Width => base_size * 2 + width;
-        public double UC_Height => height;
+        public double UC_Width => (use_left ? base_size : 0) + width + (use_right ? base_size : 0);
+        public double UC_Height => (use_top ? base_size : 0) + height + (use_bottom ? base_size : 0);
 
         public double FontSizze => BodyRadius.TopLeft / 1.3;
 
-        public Thickness[] ImageMargins {
-            get {
-                double R = BodyRadius.BottomLeft;
-                double num = R - R / Math.Sqrt(2);
-                return new Thickness[] {
-                new(0, 0, num, num), // Картинка с удалителем
-                new(num, 0, 0, num), // Картинка с переместителем
-            };
+        public Thickness ImageMargins { get {
+            double R = BodyRadius.BottomLeft;
+            double num = R - R / Math.Sqrt(2);
+            return new(0, 0, num, num); // Картинка с переместителем
+            // Картинка с удалителем ... устранена ;'-}
         } }
 
 
 
-        public abstract Point[][] PinPoints { get; }
+        public Point[][] PinPoints { get {
+            List<Point[]> res = new();
+            int n = -1;
+            double R = BodyRadius.TopLeft;
+            double min = EllipseSize + BaseFraction * 2;
+            double pin_start = EllipseSize - EllipseStrokeSize / 2;
+            double pin_width = base_size - EllipseSize + PinStrokeSize;
+            // .1.
+            // .1..2.
+            // .1..2..3.
+            foreach (var side in Sides) {
+                n++;
+                double count = side.Length;
+                if (count == 0) continue;
+
+                double body_len = n == 0 || n == 3 ? height : width;
+                double body_len2 = n == 0 || n == 3 ? width : height;
+                double delta = n < 2 ? pin_start : (n == 2 ? (use_left ? base_size : 0) : (use_top ? base_size : 0)) + body_len - EllipseStrokeSize / 2;
+                double left = R, mid = body_len2 / 2, right = body_len2 - R;
+                bool overflow = count > 1 && (right - left) / count < min;
+                int n2 = 0;
+                foreach (int type in side) {
+                    double delta2 = overflow ?
+                        mid + min * (n2 - (count - 1) / 2) :
+                        left + (right - left) / (count * 2) * (n2 * 2 + 1);
+                    if (type >= 0) res.Add(n == 0 || n == 3 ?
+                        new Point[] { new(delta2, delta), new(delta2, delta + pin_width) } :
+                        new Point[] { new(delta, delta2), new(delta + pin_width, delta2) }
+                    );
+                    n2++;
+                }
+            }
+            return res.ToArray();
+        } }
+
         public Thickness[] EllipseMargins { get {
             Point[][] pins = PinPoints;
             double R2 = EllipseSize / 2;
@@ -116,6 +170,8 @@ namespace LogicSimulator.Views.Shapes {
                 list.Add(new(n++ < CountIns ? 0 : X, pin_line[0].Y - R2, 0, 0));
             return ellipse_margins = list.ToArray();
         } }
+
+        public double ImageSize => base_size / 25 * 24;
 
 
 
@@ -139,6 +195,7 @@ namespace LogicSimulator.Views.Shapes {
             PropertyChanged?.Invoke(this, new(nameof(UC_Height)));
             PropertyChanged?.Invoke(this, new(nameof(FontSizze)));
             PropertyChanged?.Invoke(this, new(nameof(ImageMargins)));
+            PropertyChanged?.Invoke(this, new(nameof(ImageSize)));
 
             PropertyChanged?.Invoke(this, new("ButtonSize"));
             PropertyChanged?.Invoke(this, new("InvertorSize"));
