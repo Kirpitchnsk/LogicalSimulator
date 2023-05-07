@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -19,12 +18,7 @@ namespace LogicSimulator.Views.Shapes {
             System.Array.Empty<int>()
         };
 
-        protected override void Init() {
-            width = 30 * 2.5;
-            height = 30 * 2.5;
-            InitializeComponent();
-            DataContext = this;
-        }
+        protected override void Init() => InitializeComponent();
 
         /*
          * Обработка размеров внутренностей

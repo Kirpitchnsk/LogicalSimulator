@@ -21,18 +21,7 @@ namespace LogicSimulator.Views.Shapes {
             Array.Empty<int>()
         };
 
-        protected override void Init() {
-            width = 30 * 2.5;
-            height = 30 * 2.5;
-            InitializeComponent();
-            DataContext = this;
-        }
-
-        readonly Border border;
-        public Switch() : base() {
-            if (LogicalChildren[0].LogicalChildren[0] is not Border b) throw new Exception("Такого не бывает");
-            border = b;
-        }
+        protected override void Init() => InitializeComponent();
 
         /*
          * Мозги
@@ -70,7 +59,8 @@ namespace LogicSimulator.Views.Shapes {
                 ["id"] = TypeId,
                 ["pos"] = GetPos(),
                 ["size"] = GetBodySize(),
-                ["state"] = my_state
+                ["state"] = my_state,
+                ["base_size"] = base_size
             };
         }
 

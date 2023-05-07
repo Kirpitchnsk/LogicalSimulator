@@ -15,11 +15,7 @@ namespace LogicSimulator.Views.Shapes {
             System.Array.Empty<int>()
         };
 
-        protected override void Init() {
-            height = 30 * 3;
-            InitializeComponent();
-            DataContext = this;
-        }
+        protected override void Init() => InitializeComponent();
 
         /*
          * Обработка размеров внутренностей

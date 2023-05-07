@@ -17,18 +17,7 @@ namespace LogicSimulator.Views.Shapes {
             Array.Empty<int>()
         };
 
-        protected override void Init() {
-            width = 30 * 2.5;
-            height = 30 * 2.5;
-            InitializeComponent();
-            DataContext = this;
-        }
-
-        readonly Border border;
-        public LightBulb(): base() {
-            if (LogicalChildren[0].LogicalChildren[0] is not Border b) throw new Exception("Такого не бывает");
-            border = b;
-        }
+        protected override void Init() => InitializeComponent();
 
         /*
          * Мозги

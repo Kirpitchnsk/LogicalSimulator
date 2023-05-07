@@ -283,6 +283,7 @@ namespace LogicSimulator.Models {
                     item = new Canvas() { Tag = "Scene" };
                     var bounds = tb.Value.Bounds.TransformToAABB(tb.Value.Transform);
                     FixItem(ref item, pos + bounds.TopLeft, canv.Children);
+                    // Log.Write("tag: " + item.Tag);
                 }
             }
 

@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
+using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
 using LogicSimulator.Models;
@@ -8,6 +9,7 @@ using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace LogicSimulator.Views.Shapes {
     public abstract class GateBase: UserControl {
@@ -18,8 +20,9 @@ namespace LogicSimulator.Views.Shapes {
         protected abstract void Init();
         protected abstract int[][] Sides { get; }
 
-        protected Line[] line_arr;
-        protected Ellipse[] pins;
+        protected readonly Line[] line_arr;
+        protected readonly Ellipse[] pins;
+        protected readonly Border border;
 
         protected bool use_top;
         protected bool use_left;
@@ -40,26 +43,32 @@ namespace LogicSimulator.Views.Shapes {
                     case 1: outs++; break;
                     case 2: ios++; break;
                     }
-            CountIns = ins + ios;
+            CountIns = ins;
             CountOuts = outs + ios;
 
-            Init();
-
-            int count = ins + outs;
+            double sizer = sides.Select(x => x.Length).Max();
+            width = height = 30 * (2 + sizer / 2);
+            // AvaloniaXamlLoader.Load(GetSelf()); // InitializeComponent(); Не вышло :///
+            // А так от Init бы полностью отказался бы ;'-} Принцип Подскановки Лископ бы просто пылал от этого, хоть абстрактному классу и положено зависеть от потомка ;'-}
+            DataContext = GetSelf();
+            Init(); // :///
 
             var canv = (Canvas) LogicalChildren[0];
             List<Line> list = new();
             List<Ellipse> list2 = new();
+            if (canv.Children[0] is not Border b) throw new Exception("Такого не бывает");
+            border = b;
+            border.ZIndex = 2;
 
             foreach (var side in sides)
                 foreach (var type in side) {
                     if (type < 0) continue;
 
-                    var newy = new Line() { Tag = "Pin", Stroke = Brushes.Gray };
+                    var newy = new Line() { Tag = "Pin", ZIndex = 1, Stroke = Brushes.Gray };
                     list.Add(newy);
                     canv.Children.Add(newy);
 
-                    var newy2 = new Ellipse() { Tag = type == 0 ? "In" : type == 1 ? "Out" : "IO", Stroke = Brushes.Gray, Fill = new SolidColorBrush(Color.Parse("#0000")) };
+                    var newy2 = new Ellipse() { Tag = type == 0 ? "In" : type == 1 ? "Out" : "IO", ZIndex = 2, Stroke = Brushes.Gray, Fill = new SolidColorBrush(Color.Parse("#0000")) };
                     list2.Add(newy2);
                     canv.Children.Add(newy2);
                 }
@@ -167,8 +176,8 @@ namespace LogicSimulator.Views.Shapes {
                         mid + min * (n2 - (count - 1) / 2) :
                         left + (right - left) / (count * 2) * (n2 * 2 + 1);
                     if (type >= 0) res.Add(n == 0 || n == 3 ?
-                        new Point[] { new(delta2, delta), new(delta2, delta + pin_width) } :
-                        new Point[] { new(delta, delta2), new(delta + pin_width, delta2) }
+                        new Point[] { new(delta2, delta), new(0, pin_width) } :
+                        new Point[] { new(delta, delta2), new(pin_width, 0) }
                     );
                     n2++;
                 }
@@ -221,9 +230,17 @@ namespace LogicSimulator.Views.Shapes {
             var pin_stroke_size = PinStrokeSize;
             int n = 0;
             foreach (var line in line_arr) {
-                line.StartPoint = pin_points[n][0];
-                line.EndPoint = pin_points[n++][1];
+                // Пришлось отказать от этих параметров из-за бага авалонии, т.к. в Bounds попадает мусор,
+                // т.е. весь путь, который линия проходит от начала координат своего предка НЕ помечается, как Margin,
+                // из-за чего подсоединение к элементам начинается сильно глючить, видя в теге Pin вместо In XD
+                // DevTools тоже обманывается, что это действительно границы линии, а не Margin :/
+                var A = pin_points[n][0];
+                var B = pin_points[n++][1];
+
                 line.StrokeThickness = pin_stroke_size;
+                // line.StartPoint = A;
+                line.Margin = new(A.X, A.Y, 0, 0);
+                line.EndPoint = B;
             }
 
             n = 0;
