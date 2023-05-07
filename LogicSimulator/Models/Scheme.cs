@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reactive;
 
 namespace LogicSimulator.Models {
-    public class Scheme {
+    public class Scheme : ReactiveObject {
         public string Name { get; set; }
         public long Created;
         public long Modified;
@@ -108,16 +108,27 @@ namespace LogicSimulator.Models {
         void FuncOpen() {
             ViewModelBase.map.current_scheme = this;
             ViewModelBase.map.ImportScheme();
+            parent.UpdateList();
         }
         void FuncNewItem() {
             parent.AddScheme(this);
+            parent.UpdateList();
         }
         void FuncDelete() {
             parent.RemoveScheme(this);
+            parent.UpdateList();
         }
 
         public ReactiveCommand<Unit, Unit> Open { get; }
         public ReactiveCommand<Unit, Unit> NewItem { get; }
         public ReactiveCommand<Unit, Unit> Delete { get; }
+
+        public bool CanUseSchemeDeleter { get => parent.schemes.Count > 1; }
+        public bool CanOpenMe { get => ViewModelBase.map.current_scheme != this; }
+
+        public void UpdateProps() {
+            this.RaisePropertyChanged(nameof(CanUseSchemeDeleter));
+            this.RaisePropertyChanged(nameof(CanOpenMe));
+        }
     }
 }

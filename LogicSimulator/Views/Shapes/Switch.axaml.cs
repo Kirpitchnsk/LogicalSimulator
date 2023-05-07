@@ -12,36 +12,16 @@ namespace LogicSimulator.Views.Shapes {
     public partial class Switch: GateBase, IGate, INotifyPropertyChanged {
         public override int TypeId => 5;
 
-        public override int CountIns => 0;
-        public override int CountOuts => 1;
         public override UserControl GetSelf() => this;
         protected override IGate GetSelfI => this;
+        protected override int[][] Sides => new int[][] {
+            Array.Empty<int>(),
+            Array.Empty<int>(),
+            new int[] { 1 },
+            Array.Empty<int>()
+        };
 
-        protected override void Init() {
-            width = 30 * 2.5;
-            height = 30 * 2.5;
-            InitializeComponent();
-            DataContext = this;
-        }
-
-        readonly Border border;
-        public Switch() : base() {
-            if (LogicalChildren[0].LogicalChildren[1] is not Border b) throw new Exception("Такого не бывает");
-            border = b;
-        }
-
-        /*
-         * Обработка размеров внутренностей
-         */
-
-        public override Point[][] PinPoints { get {
-            double X = base_size + width - EllipseStrokeSize / 2;
-            double Y = height / 2;
-            double PinWidth = base_size - EllipseSize + PinStrokeSize;
-            return new Point[][] {
-                new Point[] { new(X, Y), new(X + PinWidth, Y) }, // Единственный выход
-            };
-        } }
+        protected override void Init() => InitializeComponent();
 
         /*
          * Мозги
@@ -74,26 +54,11 @@ namespace LogicSimulator.Views.Shapes {
          * Кастомный экспорт и импорт
          */
 
-        public override object Export() {
-            return new Dictionary<string, object> {
-                ["id"] = TypeId,
-                ["pos"] = GetPos(),
-                ["size"] = GetBodySize(),
-                ["state"] = my_state
-            };
-        }
+        public override Dictionary<string, object> ExtraExport() => new() { ["state"] = my_state };
 
-        public override void Import(Dictionary<string, object> dict) {
-            if (!@dict.TryGetValue("pos", out var @value)) { Log.Write("pos-запись элемента не обнаружен"); return; }
-            if (@value is not Point @pos) { Log.Write("Неверный тип pos-записи элемента: " + @value); return; }
-            Move(@pos);
-
-            if (!@dict.TryGetValue("size", out var @value2)) { Log.Write("size-запись элемента не обнаружен"); return; }
-            if (@value2 is not Size @size) { Log.Write("Неверный тип size-записи элемента: " + @value2); return; }
-            Resize(@size, false);
-
-            if (!@dict.TryGetValue("state", out var @value3)) { Log.Write("state-запись элемента не обнаружен"); return; }
-            if (@value3 is not bool @state) { Log.Write("Неверный тип state-записи элемента: " + @value3); return; }
+        public override void ExtraImport(string key, object extra) {
+            if (key != "state") { Log.Write(key + "-запись элемента не поддерживается"); return; }
+            if (extra is not bool @state) { Log.Write("Неверный тип state-записи элемента: " + extra); return; }
             my_state = @state;
             if (my_state) border.Background = new SolidColorBrush(Color.Parse("#7d1414"));
         }

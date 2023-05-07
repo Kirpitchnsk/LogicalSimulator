@@ -13,8 +13,12 @@ namespace LogicSimulator.Views.Shapes {
         public Point GetPos();
         public Size GetSize();
         public Size GetBodySize();
-        public void Move(Point pos);
-        public void Resize(Size size, bool global);
+        public void Move(Point pos, bool global = false);
+        public void Resize(Size size, bool global = false);
+        public void ChangeScale(double scale, bool global = false);
+        public void SavePose();
+        public Point GetPose();
+        public Rect GetBounds();
 
         public Distantor GetPin(Ellipse finded);
         public Point GetPinPos(int n);
@@ -23,6 +27,7 @@ namespace LogicSimulator.Views.Shapes {
         public void RemoveJoin(JoinedItems join);
         public void ClearJoins();
         public void SetJoinColor(int o_num, bool value);
+        public bool ContainsJoin(JoinedItems join);
 
         public void Brain(ref bool[] ins, ref bool[] outs);
         public void LogicUpdate(Dictionary<IGate, Meta> ids, Meta me);

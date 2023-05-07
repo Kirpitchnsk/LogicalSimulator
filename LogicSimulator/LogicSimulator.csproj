@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+	<AvaloniaResource Include="Styles\**" />
     <None Remove=".gitignore" />
     <None Remove="Assets\Deleter.png" />
     <None Remove="Assets\NewItem.png" />
@@ -49,6 +50,9 @@
     </Compile>
     <Compile Update="Views\Shapes\SuM.axaml.cs">
       <DependentUpon>SuM.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Shapes\FlipFlop.axaml.cs">
+      <DependentUpon>FlipFlop.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Shapes\XOR_2.axaml.cs">
       <DependentUpon>XOR_2.axaml</DependentUpon>

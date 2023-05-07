@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -10,32 +9,22 @@ namespace LogicSimulator.Views.Shapes {
     public partial class Button: GateBase, IGate, INotifyPropertyChanged {
         public override int TypeId => 6;
 
-        public override int CountIns => 0;
-        public override int CountOuts => 1;
         public override UserControl GetSelf() => this;
         protected override IGate GetSelfI => this;
+        protected override int[][] Sides => new int[][] {
+            System.Array.Empty<int>(),
+            System.Array.Empty<int>(),
+            new int[] { 1 },
+            System.Array.Empty<int>()
+        };
 
-        protected override void Init() {
-            width = 30 * 2.5;
-            height = 30 * 2.5;
-            InitializeComponent();
-            DataContext = this;
-        }
+        protected override void Init() => InitializeComponent();
 
         /*
          * Обработка размеров внутренностей
          */
 
         public double ButtonSize => width.Min(height) - BodyStrokeSize.Left * 5.5;
-
-        public override Point[][] PinPoints { get {
-            double X = base_size + width - EllipseStrokeSize / 2;
-            double Y = height / 2;
-            double PinWidth = base_size - EllipseSize + PinStrokeSize;
-            return new Point[][] {
-                new Point[] { new(X, Y), new(X + PinWidth, Y) }, // Единственный выход
-            };
-        } }
 
         /*
          * Мозги

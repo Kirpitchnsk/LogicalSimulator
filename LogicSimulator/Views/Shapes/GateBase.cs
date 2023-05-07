@@ -8,54 +8,117 @@ using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace LogicSimulator.Views.Shapes {
     public abstract class GateBase: UserControl {
-        public abstract int CountIns { get; }
-        public abstract int CountOuts { get; }
+        public int CountIns { get; private set; }
+        public int CountOuts { get; private set; }
         public abstract UserControl GetSelf();
         protected abstract IGate GetSelfI { get; }
         protected abstract void Init();
+        protected abstract int[][] Sides { get; }
 
-        protected Ellipse[] pins;
+        protected readonly Line[] line_arr;
+        protected readonly Ellipse[] pins;
+        protected readonly Border border;
+
+        protected bool use_top;
+        protected bool use_left;
+        protected bool use_right;
+        protected bool use_bottom;
 
         public GateBase() {
-            Init();
-            int count = CountIns + CountOuts;
+            var sides = Sides;
+            use_top = sides[0].Length > 0;
+            use_left = sides[1].Length > 0;
+            use_right = sides[2].Length > 0;
+            use_bottom = sides[3].Length > 0;
+            int ins = 0, outs = 0, ios = 0;
+            foreach (var side in sides)
+                foreach (var type in side)
+                    switch (type) {
+                    case 0: ins++; break;
+                    case 1: outs++; break;
+                    case 2: ios++; break;
+                    }
+            CountIns = ins;
+            CountOuts = outs + ios;
 
-            List<Ellipse> list = new();
-            foreach (var logic in LogicalChildren[0].LogicalChildren)
-                if (logic is Ellipse @ellipse) list.Add(@ellipse);
-            if (list.Count != count) throw new Exception("Чё?!"); // У этой фигуры всегда count пинов
-            pins = list.ToArray();
+            double sizer = sides.Select(x => x.Length).Max();
+            width = height = 30 * (2 + sizer / 2);
+            // AvaloniaXamlLoader.Load(GetSelf()); // InitializeComponent(); Не вышло :///
+            // А так от Init бы полностью отказался бы ;'-} Принцип Подскановки Лископ бы просто пылал от этого, хоть абстрактному классу и положено зависеть от потомка ;'-}
+            DataContext = GetSelf();
+            Init(); // :///
 
-            joins_in = new JoinedItems?[CountIns];
-            joins_out = new List<JoinedItems>[CountOuts];
-            for (int i = 0; i < CountOuts; i++) joins_out[i] = new();
+            var canv = (Canvas) LogicalChildren[0];
+            List<Line> list = new();
+            List<Ellipse> list2 = new();
+            if (canv.Children[0] is not Border b) throw new Exception("Такого не бывает");
+            border = b;
+            border.ZIndex = 2;
+
+            foreach (var side in sides)
+                foreach (var type in side) {
+                    if (type < 0) continue;
+
+                    var newy = new Line() { Tag = "Pin", ZIndex = 1, Stroke = Brushes.Gray };
+                    list.Add(newy);
+                    canv.Children.Add(newy);
+
+                    var newy2 = new Ellipse() { Tag = type == 0 ? "In" : type == 1 ? "Out" : "IO", ZIndex = 2, Stroke = Brushes.Gray, Fill = new SolidColorBrush(Color.Parse("#0000")) };
+                    list2.Add(newy2);
+                    canv.Children.Add(newy2);
+                }
+            line_arr = list.ToArray();
+            pins = list2.ToArray();
+
+            joins_in = new JoinedItems?[ins];
+            joins_out = new List<JoinedItems>[outs];
+            for (int i = 0; i < outs; i++) joins_out[i] = new();
+
+            MyRecalcSizes();
         }
 
-        public void Move(Point pos) {
-            Margin = new(pos.X, pos.Y, 0, 0);
-            UpdateJoins(false);
+        /*
+         * Всё о размерах и позициях самого элемента ;'-}
+         */
+
+        public void Move(Point pos, bool global = false) {
+            Margin = new(pos.X - UC_Width / 2, pos.Y - UC_Height / 2, 0, 0);
+            UpdateJoins(global);
         }
 
-        public void Resize(Size size, bool global) {
-            double limit = (9 + 32) * 2;
+        public void Resize(Size size, bool global = false) {
+            double limit = (9 + 32) * 2 * (base_size / 25);
             width = size.Width.Max(limit / 3 * (CountIns == 0 || CountOuts == 0 ? 2.25 : 3));
             height = size.Height.Max(limit / 3 * (1.5 + 0.75 * CountIns.Max(CountOuts)));
             RecalcSizes();
             UpdateJoins(global);
         }
+        public void ChangeScale(double scale, bool global = false) {
+            base_size *= scale;
+            width *= scale;
+            height *= scale;
+            RecalcSizes();
+            UpdateJoins(global);
+        }
 
-        public Point GetPos() => new(Margin.Left, Margin.Top);
+        public Point GetPos() => new(Margin.Left + UC_Width / 2, Margin.Top + UC_Height / 2);
         public Size GetSize() => new(Width, Height);
         public Size GetBodySize() => new(width, height);
+
+        private Point pose;
+        public void SavePose() => pose = GetPos();
+        public Point GetPose() => pose;
+        public Rect GetBounds() => new(Margin.Left, Margin.Top, UC_Width, UC_Height);
 
         /*
          * Обработка размеров внутренностей
          */
 
-        protected readonly double base_size = 25;
+        protected double base_size = 25;
         protected double width = 30 * 3; // Размеры тела, а не всего UserControl
         protected double height = 30 * 3;
 
@@ -67,29 +130,60 @@ namespace LogicSimulator.Views.Shapes {
         public double EllipseStrokeSize => BaseFraction * 5;
         public double PinStrokeSize => BaseFraction * 6;
 
-        public Thickness BodyMargin => new(base_size, 0, 0, 0);
+        public Thickness BodyMargin => new(use_left ? base_size : 0, use_top ? base_size : 0, 0, 0);
         public double BodyWidth => width;
         public double BodyHeight => height;
         public CornerRadius BodyRadius => new(width.Min(height) / 3 + BodyStrokeSize.Top);
 
-        public double UC_Width => base_size * 2 + width;
-        public double UC_Height => height;
+        public double UC_Width => (use_left ? base_size : 0) + width + (use_right ? base_size : 0);
+        public double UC_Height => (use_top ? base_size : 0) + height + (use_bottom ? base_size : 0);
 
         public double FontSizze => BodyRadius.TopLeft / 1.3;
 
-        public Thickness[] ImageMargins {
-            get {
-                double R = BodyRadius.BottomLeft;
-                double num = R - R / Math.Sqrt(2);
-                return new Thickness[] {
-                new(0, 0, num, num), // Картинка с удалителем
-                new(num, 0, 0, num), // Картинка с переместителем
-            };
+        public Thickness ImageMargins { get {
+            double R = BodyRadius.BottomLeft;
+            double num = R - R / Math.Sqrt(2);
+            return new(0, 0, num, num); // Картинка с переместителем
+            // Картинка с удалителем ... устранена ;'-}
         } }
 
 
 
-        public abstract Point[][] PinPoints { get; }
+        public Point[][] PinPoints { get {
+            List<Point[]> res = new();
+            int n = -1;
+            double R = BodyRadius.TopLeft;
+            double min = EllipseSize + BaseFraction * 2;
+            double pin_start = EllipseSize - EllipseStrokeSize / 2;
+            double pin_width = base_size - EllipseSize + PinStrokeSize;
+            // .1.
+            // .1..2.
+            // .1..2..3.
+            foreach (var side in Sides) {
+                n++;
+                double count = side.Length;
+                if (count == 0) continue;
+
+                double body_len = n == 0 || n == 3 ? height : width;
+                double body_len2 = n == 0 || n == 3 ? width : height;
+                double delta = n < 2 ? pin_start : (n == 2 ? (use_left ? base_size : 0) : (use_top ? base_size : 0)) + body_len - EllipseStrokeSize / 2;
+                double left = R, mid = body_len2 / 2, right = body_len2 - R;
+                bool overflow = count > 1 && (right - left) / count < min;
+                int n2 = 0;
+                foreach (int type in side) {
+                    double delta2 = overflow ?
+                        mid + min * (n2 - (count - 1) / 2) :
+                        left + (right - left) / (count * 2) * (n2 * 2 + 1);
+                    if (type >= 0) res.Add(n == 0 || n == 3 ?
+                        new Point[] { new(delta2, delta), new(0, pin_width) } :
+                        new Point[] { new(delta, delta2), new(pin_width, 0) }
+                    );
+                    n2++;
+                }
+            }
+            return res.ToArray();
+        } }
+
         public Thickness[] EllipseMargins { get {
             Point[][] pins = PinPoints;
             double R2 = EllipseSize / 2;
@@ -101,6 +195,8 @@ namespace LogicSimulator.Views.Shapes {
             return ellipse_margins = list.ToArray();
         } }
 
+        public double ImageSize => base_size / 25 * 24;
+
 
 
 #pragma warning disable CS0108
@@ -109,25 +205,53 @@ namespace LogicSimulator.Views.Shapes {
 
         protected void RecalcSizes() {
             // Log.Write("Size: " + width + " " + height);
-            PropertyChanged?.Invoke(this, new(nameof(EllipseSize)));
             PropertyChanged?.Invoke(this, new(nameof(BodyStrokeSize)));
-            PropertyChanged?.Invoke(this, new(nameof(EllipseStrokeSize)));
-            PropertyChanged?.Invoke(this, new(nameof(PinStrokeSize)));
             PropertyChanged?.Invoke(this, new(nameof(BodyMargin)));
             PropertyChanged?.Invoke(this, new(nameof(BodyWidth)));
             PropertyChanged?.Invoke(this, new(nameof(BodyHeight)));
             PropertyChanged?.Invoke(this, new(nameof(BodyRadius)));
-            PropertyChanged?.Invoke(this, new(nameof(EllipseMargins)));
-            PropertyChanged?.Invoke(this, new(nameof(PinPoints)));
             PropertyChanged?.Invoke(this, new(nameof(UC_Width)));
             PropertyChanged?.Invoke(this, new(nameof(UC_Height)));
             PropertyChanged?.Invoke(this, new(nameof(FontSizze)));
             PropertyChanged?.Invoke(this, new(nameof(ImageMargins)));
+            PropertyChanged?.Invoke(this, new(nameof(ImageSize)));
 
             PropertyChanged?.Invoke(this, new("ButtonSize"));
             PropertyChanged?.Invoke(this, new("InvertorSize"));
             PropertyChanged?.Invoke(this, new("InvertorStrokeSize"));
             PropertyChanged?.Invoke(this, new("InvertorMargin"));
+
+            MyRecalcSizes();
+        }
+
+        protected void MyRecalcSizes() {
+            var pin_points = PinPoints;
+            var pin_stroke_size = PinStrokeSize;
+            int n = 0;
+            foreach (var line in line_arr) {
+                // Пришлось отказать от этих параметров из-за бага авалонии, т.к. в Bounds попадает мусор,
+                // т.е. весь путь, который линия проходит от начала координат своего предка НЕ помечается, как Margin,
+                // из-за чего подсоединение к элементам начинается сильно глючить, видя в теге Pin вместо In XD
+                // DevTools тоже обманывается, что это действительно границы линии, а не Margin :/
+                var A = pin_points[n][0];
+                var B = pin_points[n++][1];
+
+                line.StrokeThickness = pin_stroke_size;
+                // line.StartPoint = A;
+                line.Margin = new(A.X, A.Y, 0, 0);
+                line.EndPoint = B;
+            }
+
+            n = 0;
+            var ellipse_margin = EllipseMargins;
+            var ellipse_size = EllipseSize;
+            var ellipse_stroke_size = EllipseStrokeSize;
+            foreach (var pin in pins) {
+                pin.Margin = ellipse_margin[n++];
+                pin.Width = ellipse_size;
+                pin.Height = ellipse_size;
+                pin.StrokeThickness = ellipse_stroke_size;
+            }
         }
 
         /*
@@ -186,6 +310,13 @@ namespace LogicSimulator.Views.Shapes {
                 foreach(var join in joins)
                     join.line.Stroke = value ? Brushes.Lime : Brushes.DarkGray;
             });
+        }
+
+        public bool ContainsJoin(JoinedItems join) {
+            foreach (var join2 in joins_in) if (join == join2) return true;
+            foreach (var joins in joins_out)
+                foreach (var join2 in joins) if (join == join2) return true;
+            return false;
         }
 
         /*
@@ -262,13 +393,18 @@ namespace LogicSimulator.Views.Shapes {
 
         public abstract int TypeId { get; }
 
-        public virtual object Export() {
-            return new Dictionary<string, object> {
+        public object Export() {
+            var res = new Dictionary<string, object> {
                 ["id"] = TypeId,
                 ["pos"] = GetPos(),
-                ["size"] = GetBodySize()
+                ["size"] = GetBodySize(),
+                ["base_size"] = base_size
             };
+            var res2 = ExtraExport();
+            if (res2 != null) foreach (var item in res2) res.Add(item.Key, item.Value);
+            return res;
         }
+        public virtual Dictionary<string, object>? ExtraExport() => null;
 
         public List<object[]> ExportJoins(Dictionary<IGate, int> to_num) {
             List<object[]> res = new();
@@ -282,14 +418,41 @@ namespace LogicSimulator.Views.Shapes {
             return res;
         }
 
-        public virtual void Import(Dictionary<string, object> dict) {
-            if (!@dict.TryGetValue("pos", out var @value)) { Log.Write("pos-запись элемента не обнаружен"); return; }
-            if (@value is not Point @pos) { Log.Write("Неверный тип pos-записи элемента: " + @value); return; }
-            Move(@pos);
-
-            if (!@dict.TryGetValue("size", out var @value2)) { Log.Write("size-запись элемента не обнаружен"); return; }
-            if (@value2 is not Size @size) { Log.Write("Неверный тип size-записи элемента: " + @value2); return; }
-            Resize(@size, false);
+        public void Import(Dictionary<string, object> dict) {
+            double new_b_size = base_size;
+            Point new_pos = GetPos();
+            Size new_size = GetSize();
+            foreach (var item in dict) {
+                object value = item.Value;
+                switch (item.Key) {
+                case "id":
+                    if (value is int @id) {
+                        if (@id != TypeId) throw new ArgumentException("ВНИМАНИЕ! Пришёл не верный id: " + @id + " Ожидалось: " + TypeId);
+                    } else Log.Write("Неверный тип id-записи элемента: " + value);
+                    break;
+                case "pos":
+                    if (value is Point @pos) new_pos = @pos;
+                    else Log.Write("Неверный тип pos-записи элемента: " + value);
+                    break;
+                case "base_size":
+                    if (value is double @b_size) new_b_size = @b_size;
+                    else Log.Write("Неверный тип base_size-записи элемента: " + value);
+                    break;
+                case "size":
+                    if (value is Size @size) new_size = @size;
+                    else Log.Write("Неверный тип size-записи элемента: " + value);
+                    break;
+                default:
+                    ExtraImport(item.Key, value);
+                    break;
+                }
+            }
+            base_size = new_b_size;
+            Move(new_pos);
+            Resize(new_size);
+        }
+        public virtual void ExtraImport(string key, object extra) {
+            Log.Write(key + "-запись элемента не поддерживается");
         }
     }
 }

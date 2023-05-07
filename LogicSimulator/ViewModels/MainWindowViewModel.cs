@@ -1,5 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using LogicSimulator.Models;
@@ -8,6 +7,7 @@ using LogicSimulator.Views.Shapes;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Reactive;
@@ -37,27 +37,14 @@ namespace LogicSimulator.ViewModels {
         }
     }
 
-    public class MainWindowViewModel: ViewModelBase, INotifyPropertyChanged {
+    public class MainWindowViewModel: ViewModelBase {
         private string log = "";
-        public string Logg { get => log; set {
-            // this.RaiseAndSetIfChanged(ref log, value); Почему-то сломался из-за добавления INotifyPropertyChanged
-            if (log == value) return;
-            log = value;
-            PropertyChanged?.Invoke(this, new(nameof(Logg)));
-        } }
+        public string Logg { get => log; set => this.RaiseAndSetIfChanged(ref log, value); }
 
         public MainWindowViewModel() { // Если я буду Window mw передавать через этот конструктор, то предварительный просмотр снова порвёт смачно XD
             Log.Mwvm = this;
             Comm = ReactiveCommand.Create<string, Unit>(n => { FuncComm(n); return new Unit(); });
             NewItem = ReactiveCommand.Create<Unit, Unit>(_ => { FuncNewItem(); return new Unit(); });
-
-            /* Так не работает :/
-            var app = Application.Current;
-            if (app == null) return; // Такого не бывает
-            var life = (IClassicDesktopStyleApplicationLifetime?) app.ApplicationLifetime;
-            if (life == null) return; // Такого не бывает
-            foreach (var w in life.Windows) Log.Write("Window: " + w);
-            Log.Write("Windows: " + life.Windows.Count); */
         }
 
         private Window? mw;
@@ -69,6 +56,7 @@ namespace LogicSimulator.ViewModels {
             if (canv == null) return; // Такого не бывает
 
             canv.Children.Add(map.Marker);
+            canv.Children.Add(map.Marker2);
 
             var panel = (Panel?) canv.Parent;
             if (panel == null) return; // Такого не бывает
@@ -88,20 +76,16 @@ namespace LogicSimulator.ViewModels {
                         if (canv == null) return; // Такого не бывает
 
                         var newy = map.GenSelectedItem();
-                        var size = newy.GetSize() / 2;
-                        newy.Move(pos - new Point(size.Width, size.Height));
-                        canv.Children.Add(newy.GetSelf());
+                        newy.Move(pos);
                         map.AddItem(newy);
-                    }
-
-                    if (map.new_join != null) {
-                        canv.Children.Add(map.new_join);
-                        map.new_join = null;
                     }
                 }
             };
             panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) => {
-                if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y);
+                if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y, e.GetCurrentPoint(canv).Position);
+            };
+            mw.KeyDown += (object? sender, KeyEventArgs e) => {
+                if (e.Source != null && e.Source is Control @control) map.KeyPressed(@control, e.Key);
             };
         }
 
@@ -165,16 +149,15 @@ namespace LogicSimulator.ViewModels {
             };
         }
 
-#pragma warning disable CS0108
-        public event PropertyChangedEventHandler? PropertyChanged;
-#pragma warning restore CS0108
         public void Update() {
             Log.Write("Текущий проект:\n" + current_proj);
 
             map.ImportScheme();
 
-            PropertyChanged?.Invoke(this, new(nameof(ProjName)));
-            PropertyChanged?.Invoke(this, new(nameof(Schemes)));
+            /*this.RaisePropertyChanged(new(nameof(ProjName)));
+            this.RaisePropertyChanged(new(nameof(Schemes)));
+            this.RaisePropertyChanged(new(nameof(Logg)));*/ // А вот это действительно странно ;'-} Хотя даже в этом случае оно несколько тиков глючит
+            if (mw != null) mw.Width++; // ГОРАААААААААААААЗДО больше толку, чем от всех этих НЕРАБОЧИХ через раз RaisePropertyChanged
         }
 
         /*
@@ -208,5 +191,7 @@ namespace LogicSimulator.ViewModels {
         }
 
         public ReactiveCommand<Unit, Unit> NewItem { get; }
+
+        public static bool LockSelfConnect { get => map.lock_self_connect; set => map.lock_self_connect = value; }
     }
 }
