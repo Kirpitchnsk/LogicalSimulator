@@ -18,6 +18,8 @@ namespace LogicSimulator.Models {
 
         readonly Simulator sim = new();
 
+        public Canvas canv = new();
+
         /*
          * Выборка элементов
          */
@@ -59,9 +61,20 @@ namespace LogicSimulator.Models {
          */
 
         readonly List<IGate> items = new();
+        // readonly MatrixTransform general_transform = new() { Matrix = new(2.0, 0.0, 0.0, 2.0, 3100, -100) };
+
+        private void AddToMap(IControl item) {
+            /* var layout = new LayoutTransformControl() { Не рабочая тема :/
+                LayoutTransform = general_transform,
+                Child = item,
+            };*/
+            canv.Children.Add(item);
+        }
+
         public void AddItem(IGate item) {
             items.Add(item);
             sim.AddItem(item);
+            AddToMap(item.GetSelf());
         }
         public void RemoveItem(IGate item) {
             items.Remove(item);
@@ -145,11 +158,14 @@ namespace LogicSimulator.Models {
         bool join_start;
         bool delete_join = false;
 
+        Point camera_pos;
+        Point old_camera_pos;
+
         public void Press(Control item, Point pos) {
             // Log.Write("PointerPressed: " + item.GetType().Name + " pos: " + pos);
 
             UpdateMode(item);
-            // Log.Write("new_mode: " + mode);
+            Log.Write("new_mode: " + mode);
 
             moved_pos = pos;
             moved_item = GetGate(item);
@@ -157,6 +173,9 @@ namespace LogicSimulator.Models {
             if (moved_item != null) item_old_pos = moved_item.GetPos();
 
             switch (mode) {
+            case 1:
+                old_camera_pos = camera_pos;
+                break;
             case 3:
                 if (moved_item == null) break;
                 item_old_size = moved_item.GetBodySize();
@@ -193,13 +212,6 @@ namespace LogicSimulator.Models {
             Move(item, pos);
         }
 
-        public Canvas? FindCanvas() {
-            foreach (var item in items) {
-                var p = item.GetSelf().Parent;
-                if (p is Canvas @canv) return @canv;
-            }
-            return null;
-        }
         public void FixItem(ref Control res, Point pos, IEnumerable<ILogical> items) {
             foreach (var logic in items) {
                 // if (item.IsPointerOver) { } Гениальная вещь! ;'-} Хотя не, всё равно блокируется после Press и до Release, чего я впринципе хочу избежать ;'-}
@@ -214,14 +226,11 @@ namespace LogicSimulator.Models {
             // Log.Write("PointerMoved: " + item.GetType().Name + " pos: " + pos);
 
             if (mode == 5 || mode == 6 || mode == 7 || mode == 8) {
-                var canv = FindCanvas();
-                if (canv != null) {
-                    var tb = canv.TransformedBounds;
-                    if (tb != null) {
-                        item = new Canvas() { Tag = "Scene" };
-                        var bounds = tb.Value.Bounds.TransformToAABB(tb.Value.Transform);
-                        FixItem(ref item, pos + bounds.TopLeft, canv.Children);
-                    }
+                var tb = canv.TransformedBounds;
+                if (tb != null) {
+                    item = new Canvas() { Tag = "Scene" };
+                    var bounds = tb.Value.Bounds.TransformToAABB(tb.Value.Transform);
+                    FixItem(ref item, pos + bounds.TopLeft, canv.Children);
                 }
             }
 
@@ -258,6 +267,13 @@ namespace LogicSimulator.Models {
             if (Math.Pow(delta.X, 2) + Math.Pow(delta.Y, 2) > 9) tapped = false;
 
             switch (mode) {
+            case 1:
+                camera_pos = old_camera_pos + delta;
+                Log.Write("canv_pos: " + camera_pos);
+                // new LayoutTransformControl();
+                // new MatrixTransform();
+                // new ScaleTransform();
+                break;
             case 2:
                 if (moved_item == null) break;
                 var new_pos = item_old_pos + delta;
@@ -269,12 +285,12 @@ namespace LogicSimulator.Models {
                 moved_item.Resize(new_size, false);
                 break;
             case 5 or 6 or 7:
-                var end_pos = marker_circle == null ? pos : marker_circle.Center(FindCanvas());
+                var end_pos = marker_circle == null ? pos : marker_circle.Center(canv);
                 marker.EndPoint = end_pos;
                 break;
             case 8:
                 if (old_join == null) break;
-                var p = marker_circle == null ? pos : marker_circle.Center(FindCanvas());
+                var p = marker_circle == null ? pos : marker_circle.Center(canv);
                 if (join_start) marker.EndPoint = p;
                 else marker.StartPoint = p;
                 break;
@@ -283,7 +299,6 @@ namespace LogicSimulator.Models {
 
         public bool tapped = false; // Обрабатывается после Release
         public Point tap_pos; // Обрабатывается после Release
-        public Line? new_join; // Обрабатывается после Release
 
         public int Release(Control item, Point pos) {
             Move(item, pos);
@@ -298,7 +313,7 @@ namespace LogicSimulator.Models {
                     // Log.Write("Стартовый элемент: " + start_dist.parent + " (" + start_dist.GetPos() + ")");
                     // Log.Write("Конечный  элемент: " + end_dist.parent   + " (" + end_dist.GetPos()   + ")");
                     var newy = new JoinedItems(start_dist, end_dist);
-                    new_join = newy.line;
+                    AddToMap(newy.line);
                 }
                 marker.IsVisible = false;
                 marker_mode = 0;
@@ -312,7 +327,7 @@ namespace LogicSimulator.Models {
                     @join.Delete();
 
                     var newy = join_start ? new JoinedItems(@join.A, p) : new JoinedItems(p, @join.B);
-                    new_join = newy.line;
+                    AddToMap(newy.line);
                 } else old_join.IsVisible = true;
 
                 marker.IsVisible = false;
@@ -347,7 +362,6 @@ namespace LogicSimulator.Models {
          */
 
         public readonly FileHandler filer = new();
-        public Canvas canv = new();
         public Scheme? current_scheme;
 
         public void Export() {
@@ -389,7 +403,6 @@ namespace LogicSimulator.Models {
 
                 newy.Import(@dict);
                 AddItem(newy);
-                canv.Children.Add(newy.GetSelf());
                 list.Add(newy);
             }
             var items_arr = list.ToArray();
@@ -405,7 +418,7 @@ namespace LogicSimulator.Models {
                     join[3] is not int @num_b || join[4] is not int @pin_b || join[5] is not string @tag_b) { Log.Write("Содержимое списка соединения ошибочно"); continue; }
 
                 var newy = new JoinedItems(new(items_arr[@num_a], @pin_a, tag_a), new(items_arr[@num_b], @pin_b, tag_b));
-                canv.Children.Add(newy.line);
+                AddToMap(newy.line);
                 joinz.Add(newy);
             }
 

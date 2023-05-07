@@ -90,13 +90,7 @@ namespace LogicSimulator.ViewModels {
                         var newy = map.GenSelectedItem();
                         var size = newy.GetSize() / 2;
                         newy.Move(pos - new Point(size.Width, size.Height));
-                        canv.Children.Add(newy.GetSelf());
                         map.AddItem(newy);
-                    }
-
-                    if (map.new_join != null) {
-                        canv.Children.Add(map.new_join);
-                        map.new_join = null;
                     }
                 }
             };
