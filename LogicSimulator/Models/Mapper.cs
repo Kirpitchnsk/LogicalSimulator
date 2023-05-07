@@ -61,13 +61,18 @@ namespace LogicSimulator.Models {
          */
 
         readonly List<IGate> items = new();
-        // readonly MatrixTransform general_transform = new() { Matrix = new(2.0, 0.0, 0.0, 2.0, 3100, -100) };
-
+        // readonly MatrixTransform general_transform = new() { Matrix = new(1.0, 0.0, 0.0, 1.0, 0, 0) };
+        // Canvas? itemer;
         private void AddToMap(IControl item) {
-            /* var layout = new LayoutTransformControl() { Не рабочая тема :/
-                LayoutTransform = general_transform,
-                Child = item,
-            };*/
+            /*if (itemer == null) { Снова мимо :///
+                itemer = new Canvas();
+                var layout = new LayoutTransformControl() {
+                    LayoutTransform = general_transform,
+                    Child = itemer,
+                };
+                canv.Children.Add(layout);
+            }
+            itemer.Children.Add(item);*/
             canv.Children.Add(item);
         }
 
@@ -355,6 +360,10 @@ namespace LogicSimulator.Models {
 
         public void WheelMove(Control item, double move) {
             // Log.Write("WheelMoved: " + item.GetType().Name + " delta: " + (move > 0 ? 1 : -1));
+            var gate = GetGate(item);
+            if (gate == null) return;
+            gate.ChangeScale(move > 0 ? 1.1 : 1/1.1);
+            Log.Write("Gate: " + gate);
         }
 
         /*

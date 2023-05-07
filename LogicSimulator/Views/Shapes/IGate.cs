@@ -15,6 +15,7 @@ namespace LogicSimulator.Views.Shapes {
         public Size GetBodySize();
         public void Move(Point pos);
         public void Resize(Size size, bool global);
+        public void ChangeScale(double scale);
 
         public Distantor GetPin(Ellipse finded);
         public Point GetPinPos(int n);

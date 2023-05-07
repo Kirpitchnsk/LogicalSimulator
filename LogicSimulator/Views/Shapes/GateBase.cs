@@ -45,6 +45,13 @@ namespace LogicSimulator.Views.Shapes {
             height = size.Height.Max(limit / 3 * (1.5 + 0.75 * CountIns.Max(CountOuts)));
             RecalcSizes();
             UpdateJoins(global);
+            RecalcSizes();
+        }
+        public void ChangeScale(double scale) {
+            base_size *= scale;
+            width *= scale;
+            height *= scale;
+            RecalcSizes();
         }
 
         public Point GetPos() => new(Margin.Left, Margin.Top);
@@ -55,7 +62,7 @@ namespace LogicSimulator.Views.Shapes {
          * Обработка размеров внутренностей
          */
 
-        protected readonly double base_size = 25;
+        protected double base_size = 25;
         protected double width = 30 * 3; // Размеры тела, а не всего UserControl
         protected double height = 30 * 3;
 
