@@ -68,6 +68,7 @@ namespace LogicSimulator.ViewModels {
             if (canv == null) return; // Такого не бывает
 
             canv.Children.Add(map.Marker);
+            canv.Children.Add(map.Marker2);
 
             var panel = (Panel?) canv.Parent;
             if (panel == null) return; // Такого не бывает

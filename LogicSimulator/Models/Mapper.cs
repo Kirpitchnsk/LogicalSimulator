@@ -14,13 +14,42 @@ using Button = LogicSimulator.Views.Shapes.Button;
 namespace LogicSimulator.Models {
     public class Mapper {
         readonly Line marker = new() { Tag = "Marker", ZIndex = 2, IsVisible = false, Stroke = Brushes.YellowGreen, StrokeThickness = 3 };
-        readonly Rectangle marker2 = new() { Tag = "Marker", ZIndex = 2, IsVisible = false, Stroke = Brushes.MediumAquamarine, StrokeThickness = 3 };
+        readonly Rectangle marker2 = new() { Tag = "Marker", Classes = new("anim"), ZIndex = 2, IsVisible = false, Stroke = Brushes.MediumAquamarine, StrokeThickness = 3 };
         
         public Line Marker { get => marker; }
+        public Rectangle Marker2 { get => marker2; }
 
         readonly Simulator sim = new();
 
         public Canvas canv = new();
+
+        /*
+         * Маркер
+         */
+
+        private IGate? marked_item;
+        private JoinedItems? marked_line;
+
+        private void UpdateMarker() {
+            marker2.IsVisible = marked_item != null || marked_line != null;
+
+            if (marked_item != null) {
+                var bound = marked_item.GetBounds();
+                marker2.Margin = new(bound.X, bound.Y);
+                marker2.Width = bound.Width;
+                marker2.Height = bound.Height;
+                marked_line = null;
+            }
+
+            if (marked_line != null) {
+                var line = marked_line.line;
+                var A = line.StartPoint;
+                var B = line.EndPoint;
+                marker2.Margin = new(Math.Min(A.X, B.X), Math.Min(A.Y, B.Y));
+                marker2.Width = Math.Abs(A.X - B.X);
+                marker2.Height = Math.Abs(A.Y - B.Y);
+            }
+        }
 
         /*
          * Выборка элементов
@@ -84,6 +113,11 @@ namespace LogicSimulator.Models {
             AddToMap(item.GetSelf());
         }
         public void RemoveItem(IGate item) {
+            if (marked_line != null && item.ContainsJoin(marked_line)) {
+                marked_line = null;
+                UpdateMarker();
+            }
+
             items.Remove(item);
             sim.RemoveItem(item);
 
@@ -203,6 +237,11 @@ namespace LogicSimulator.Models {
                 JoinedItems.arrow_to_join.TryGetValue(@join, out var @join2);
                 if (@join2 == null) break;
 
+                if (marked_line == @join2) {
+                    marked_line = null;
+                    UpdateMarker();
+                }
+
                 var dist_a = @join.StartPoint.Hypot(pos);
                 var dist_b = @join.EndPoint.Hypot(pos);
                 join_start = dist_a > dist_b;
@@ -280,16 +319,19 @@ namespace LogicSimulator.Models {
                     var pose = item_.GetPose();
                     item_.Move(pose + delta, true);
                 }
+                UpdateMarker();
                 break;
             case 2:
                 if (moved_item == null) break;
                 var new_pos = item_old_pos + delta;
                 moved_item.Move(new_pos);
+                UpdateMarker();
                 break;
             case 3:
                 if (moved_item == null) break;
                 var new_size = item_old_size + new Size(delta.X, delta.Y);
                 moved_item.Resize(new_size);
+                UpdateMarker();
                 break;
             case 5 or 6 or 7:
                 var end_pos = marker_circle == null ? pos : marker_circle.Center(canv);
@@ -356,12 +398,30 @@ namespace LogicSimulator.Models {
         private void Tapped(Control item, Point pos) {
             // Log.Write("Tapped: " + item.GetType().Name + " pos: " + pos);
             tap_pos = pos;
+
             switch (mode) {
             case 4:
-                if (moved_item != null) RemoveItem(moved_item);
+                if (moved_item == null) break;
+
+                RemoveItem(moved_item);
+                if (moved_item == marked_item) {
+                    marked_item = null;
+                    UpdateMarker();
+                }
                 break;
-            case 3 or 8:
-                Log.Write("yeah: " + moved_item);
+            case 2 or 8:
+                if (item is Line @line) {
+                    if (!JoinedItems.arrow_to_join.TryGetValue(@line, out var @join)) break;
+                    marked_item = null;
+                    marked_line = @join;
+                    UpdateMarker();
+                    break;
+                }
+
+                if (moved_item == null) break;
+
+                marked_item = moved_item;
+                UpdateMarker();
                 break;
             }
         }
@@ -383,11 +443,13 @@ namespace LogicSimulator.Models {
                     var new_pos = delta + pos;
                     gate.Move(new_pos, true);
                 }
+                UpdateMarker();
                 break;
             case 2:
                 var gate2 = GetGate(item);
                 if (gate2 == null) return;
                 gate2.ChangeScale(inv_scale);
+                UpdateMarker();
                 break;
             }
         }

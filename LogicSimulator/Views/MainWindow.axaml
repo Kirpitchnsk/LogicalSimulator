@@ -28,6 +28,8 @@
 			<Setter Property="Padding" Value="4"/>
 			<Setter Property="MinHeight" Value="0"/>
 		</Style>
+		
+		<StyleInclude Source="/Styles/Animation.axaml"/>
 	</Window.Styles>
 
 	<DockPanel>

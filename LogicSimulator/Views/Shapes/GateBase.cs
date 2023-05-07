@@ -34,6 +34,10 @@ namespace LogicSimulator.Views.Shapes {
             for (int i = 0; i < CountOuts; i++) joins_out[i] = new();
         }
 
+        /*
+         * Всё о размерах и позициях самого элемента ;'-}
+         */
+
         public void Move(Point pos, bool global = false) {
             Margin = new(pos.X - UC_Width / 2, pos.Y - UC_Height / 2, 0, 0);
             UpdateJoins(global);
@@ -54,13 +58,14 @@ namespace LogicSimulator.Views.Shapes {
             UpdateJoins(global);
         }
 
-        public Point GetPos() => new(Margin.Left + UC_Width/2, Margin.Top + UC_Height / 2);
+        public Point GetPos() => new(Margin.Left + UC_Width / 2, Margin.Top + UC_Height / 2);
         public Size GetSize() => new(Width, Height);
         public Size GetBodySize() => new(width, height);
 
         private Point pose;
         public void SavePose() => pose = GetPos();
         public Point GetPose() => pose;
+        public Rect GetBounds() => new(Margin.Left, Margin.Top, UC_Width, UC_Height);
 
         /*
          * Обработка размеров внутренностей
@@ -197,6 +202,13 @@ namespace LogicSimulator.Views.Shapes {
                 foreach(var join in joins)
                     join.line.Stroke = value ? Brushes.Lime : Brushes.DarkGray;
             });
+        }
+
+        public bool ContainsJoin(JoinedItems join) {
+            foreach (var join2 in joins_in) if (join == join2) return true;
+            foreach (var joins in joins_out)
+                foreach (var join2 in joins) if (join == join2) return true;
+            return false;
         }
 
         /*
