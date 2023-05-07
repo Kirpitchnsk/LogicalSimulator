@@ -14,6 +14,8 @@ using Button = LogicSimulator.Views.Shapes.Button;
 namespace LogicSimulator.Models {
     public class Mapper {
         readonly Line marker = new() { Tag = "Marker", ZIndex = 2, IsVisible = false, Stroke = Brushes.YellowGreen, StrokeThickness = 3 };
+        readonly Rectangle marker2 = new() { Tag = "Marker", ZIndex = 2, IsVisible = false, Stroke = Brushes.MediumAquamarine, StrokeThickness = 3 };
+        
         public Line Marker { get => marker; }
 
         readonly Simulator sim = new();
@@ -354,15 +356,21 @@ namespace LogicSimulator.Models {
         private void Tapped(Control item, Point pos) {
             // Log.Write("Tapped: " + item.GetType().Name + " pos: " + pos);
             tap_pos = pos;
-
-            if (mode == 4 && moved_item != null) RemoveItem(moved_item);
+            switch (mode) {
+            case 4:
+                if (moved_item != null) RemoveItem(moved_item);
+                break;
+            case 3 or 8:
+                Log.Write("yeah: " + moved_item);
+                break;
+            }
         }
 
         public void WheelMove(Control item, double move, Point pos) {
             // Log.Write("WheelMoved: " + item.GetType().Name + " delta: " + (move > 0 ? 1 : -1));
             int mode = CalcMode((string?) item.Tag);
             double scale = move > 0 ? 1.1 : 1 / 1.1;
-            double inv_scale = move > 0 ? 1 / 1.1 : 1.1;
+            double inv_scale = 1 / scale;
 
             switch (mode) {
             case 1:

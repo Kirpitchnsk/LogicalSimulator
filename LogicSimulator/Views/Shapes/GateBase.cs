@@ -277,7 +277,8 @@ namespace LogicSimulator.Views.Shapes {
             return new Dictionary<string, object> {
                 ["id"] = TypeId,
                 ["pos"] = GetPos(),
-                ["size"] = GetBodySize()
+                ["size"] = GetBodySize(),
+                ["base_size"] = base_size
             };
         }
 
@@ -297,6 +298,9 @@ namespace LogicSimulator.Views.Shapes {
             if (!@dict.TryGetValue("pos", out var @value)) { Log.Write("pos-запись элемента не обнаружен"); return; }
             if (@value is not Point @pos) { Log.Write("Неверный тип pos-записи элемента: " + @value); return; }
             Move(@pos);
+
+            if (@dict.TryGetValue("base_size", out var @value3))
+                if (@value3 is double @b_size) base_size = @b_size;
 
             if (!@dict.TryGetValue("size", out var @value2)) { Log.Write("size-запись элемента не обнаружен"); return; }
             if (@value2 is not Size @size) { Log.Write("Неверный тип size-записи элемента: " + @value2); return; }
