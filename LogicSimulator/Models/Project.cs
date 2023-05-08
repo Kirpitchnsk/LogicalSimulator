@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Avalonia.Controls;
+using LogicSimulator.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -10,16 +12,23 @@ namespace LogicSimulator.Models {
         public long Modified;
 
         public ObservableCollection<Scheme> schemes = new();
-        public string FileName { get; }
+        public string? FileDir { get; private set; }
+        public string? FileName { get; set; }
 
-        public Project() { // Новый проект
+        private FileHandler parent;
+
+        public Project(FileHandler parent) { // Новый проект
+            this.parent = parent;
             Name = "Новый проект";
             Created = Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            FileName = FileHandler.GetProjectFileName();
+            FileDir = null;
+            FileName = null; // FileHandler.GetProjectFileName();
             CreateScheme();
         }
 
-        public Project(string fileName, object data) { // Импорт
+        public Project(FileHandler parent, string dir, string fileName, object data) { // Импорт
+            this.parent = parent;
+            FileDir = dir;
             FileName = fileName;
 
             if (data is not Dictionary<string, object> dict) throw new Exception("Ожидался словарь в корне проекта");
@@ -96,6 +105,13 @@ namespace LogicSimulator.Models {
             Name = name;
             Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             Save();
+        }
+
+        public bool CanSave() => FileDir != null;
+        public void SaveAs(Window mw) {
+            FileDir = FileHandler.RequestProjectPath(mw);
+            Save();
+            parent.AppendProject(this);
         }
     }
 }

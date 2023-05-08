@@ -154,16 +154,17 @@ namespace LogicSimulator.ViewModels {
 
             this.RaisePropertyChanged(new(nameof(ProjName)));
             this.RaisePropertyChanged(new(nameof(Schemes)));
-            this.RaisePropertyChanged(new(nameof(Logg))); // А вот это действительно странно ;'-} Хотя даже в этом случае оно несколько тиков глючит
+            this.RaisePropertyChanged(new(nameof(CanSave)));
             if (mw != null) mw.Width++; // ГОРАААААААААААААЗДО больше толку, чем от всех этих НЕРАБОЧИХ через раз RaisePropertyChanged
         }
+
+        public static bool CanSave { get => current_proj != null && current_proj.CanSave(); }
 
         /*
          * Кнопочки!
          */
 
         public void FuncComm(string Comm) {
-            // Log.Write("Comm: " + Comm);
             switch (Comm) {
             case "Create":
                 new LauncherWindow().Show();
@@ -175,6 +176,11 @@ namespace LogicSimulator.ViewModels {
                 break;
             case "Save":
                 map.Export();
+                break;
+            case "SaveAs":
+                map.Export();
+                if (mw != null) current_proj?.SaveAs(mw);
+                this.RaisePropertyChanged(new(nameof(CanSave)));
                 break;
             case "Exit":
                 mw?.Close();
