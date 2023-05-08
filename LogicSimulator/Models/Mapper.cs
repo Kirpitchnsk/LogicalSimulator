@@ -491,7 +491,7 @@ namespace LogicSimulator.Models {
             List<object[]> joins = new();
             foreach (var item in items) joins.Add(item.ExportJoins(item_to_num));
 
-            bool[] states = sim.Export();
+            string states = sim.Export();
 
             try { current_scheme.Update(arr, joins.ToArray(), states); }
             catch (Exception e) { Log.Write("Save error:\n" + e); }

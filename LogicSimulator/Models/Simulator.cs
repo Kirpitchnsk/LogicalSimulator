@@ -114,10 +114,10 @@ namespace LogicSimulator.Models {
             // Log.Write("Выходы: " + Utils.Obj2json(outs));
         }
 
-        public bool[] Export() => outs.ToArray();
-        public void Import(bool[] state) {
-            if (state.Length == 0) state = new bool[] { false };
-            outs = state.ToList();
+        public string Export() => string.Join("", outs.Select(x => x ? '1' : '0'));
+        public void Import(string state) {
+            if (state.Length == 0) state = "0";
+            outs = state.Select(x => x == '1').ToList();
             outs2 = Enumerable.Repeat(false, state.Length).ToList();
         }
         public void Clear() {

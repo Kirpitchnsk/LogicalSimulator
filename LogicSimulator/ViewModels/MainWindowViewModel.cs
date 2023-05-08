@@ -152,9 +152,9 @@ namespace LogicSimulator.ViewModels {
 
             map.ImportScheme();
 
-            /*this.RaisePropertyChanged(new(nameof(ProjName)));
+            this.RaisePropertyChanged(new(nameof(ProjName)));
             this.RaisePropertyChanged(new(nameof(Schemes)));
-            this.RaisePropertyChanged(new(nameof(Logg)));*/ // А вот это действительно странно ;'-} Хотя даже в этом случае оно несколько тиков глючит
+            this.RaisePropertyChanged(new(nameof(Logg))); // А вот это действительно странно ;'-} Хотя даже в этом случае оно несколько тиков глючит
             if (mw != null) mw.Width++; // ГОРАААААААААААААЗДО больше толку, чем от всех этих НЕРАБОЧИХ через раз RaisePropertyChanged
         }
 
