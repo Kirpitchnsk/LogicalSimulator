@@ -87,6 +87,7 @@ namespace LogicSimulator.Views.Shapes {
 
         public void Move(Point pos, bool global = false) {
             Margin = new(pos.X - UC_Width / 2, pos.Y - UC_Height / 2, 0, 0);
+            // Log.Write("Пришла позиция: " + pos + " | а вышла: " + GetPos());
             UpdateJoins(global);
         }
 
@@ -449,8 +450,8 @@ namespace LogicSimulator.Views.Shapes {
                 }
             }
             base_size = new_b_size;
-            Move(new_pos);
             Resize(new_size);
+            Move(new_pos);
         }
         public virtual void ExtraImport(string key, object extra) {
             Log.Write(key + "-запись элемента не поддерживается");
