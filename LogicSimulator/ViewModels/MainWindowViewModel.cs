@@ -171,8 +171,13 @@ namespace LogicSimulator.ViewModels {
                 mw?.Hide();
                 break;
             case "Open":
-                new LauncherWindow().Show();
-                mw?.Hide();
+                if (mw == null) break;
+                var selected = map.filer.SelectProjectFile(mw);
+                if (selected != null) {
+                    current_proj = selected;
+                    map.current_scheme = current_proj.GetFirstCheme();
+                    Update();
+                }
                 break;
             case "Save":
                 map.Export();

@@ -35,7 +35,7 @@
 	<DockPanel>
 		<Menu DockPanel.Dock="Top" ZIndex="10" Background="White">
 			<MenuItem Header="Файл">
-				<MenuItem Header="Создать" Command="{Binding Comm}" CommandParameter="Create"/>
+				<MenuItem Header="Создать новый проект" Command="{Binding Comm}" CommandParameter="Create"/>
 				<MenuItem Header="Открыть проект" Command="{Binding Comm}" CommandParameter="Open"/>
 				<MenuItem Header="Сохранить текущую схему" Command="{Binding Comm}" CommandParameter="Save" IsEnabled="{Binding CanSave}"/>
 				<MenuItem Header="Сохранить проект как..." Command="{Binding Comm}" CommandParameter="SaveAs"/>

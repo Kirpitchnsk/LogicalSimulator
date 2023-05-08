@@ -34,36 +34,35 @@ namespace LogicSimulator.Models {
 
         public Project CreateProject() {
             var proj = new Project(this);
-            projects.Add(proj);
+            // projects.Add(proj); Перенесено в AppendProject
             return proj;
         }
         private Project? LoadProject(string dir, string fileName) {
             try {
                 var obj = Utils.Xml2obj(File.ReadAllText(Path.Combine(dir, fileName))) ?? throw new DataException("Не верная структура XML-файла проекта!");
                 var proj = new Project(this, dir, fileName, obj);
-                projects.Add(proj);
+                if (!projects.Contains(proj)) projects.Add(proj);
                 return proj;
             } catch (Exception e) { Log.Write("Неудачная попытка загрузить проект:\n" + e); }
             return null;
+        }
+        private Project? LoadProject(string path) {
+            var s_arr = path.Split(Path.DirectorySeparatorChar).ToList();
+            var name = s_arr[^1];
+            s_arr.RemoveRange(s_arr.Count - 1, 1);
+            var dir = Path.Combine(s_arr.ToArray());
+
+            return LoadProject(dir, name);
         }
         private void LoadProjectList() {
             var file = Path.Combine(AppData, "project_list.db");
             if (!File.Exists(file)) return;
 
-            object data;
-            try { data = Utils.None(File.ReadAllText(file)) ?? throw new DataException("Не верная структура SQLite (.db)-файла списка проектов!"); } catch (Exception e) { Log.Write("Неудачная попытка загрузить список проектов:\n" + e); return; }
-
-            if (data is not List<object> @arr) { Log.Write("В списке проектов на верхнем уровне ожидалось увидеть список"); return; }
-            foreach (var path in @arr) {
-                if (path is not string @str) { Log.Write("Один из путей списка проектов - не строка: " + path); continue; }
-                project_paths.Add(@str);
-
-                var s_arr = @str.Split(Path.DirectorySeparatorChar).ToList();
-                var name = s_arr[^1];
-                s_arr.RemoveRange(s_arr.Count - 1, 1);
-                var dir = Path.Combine(s_arr.ToArray());
-
-                LoadProject(dir, name);
+            string[] data;
+            try { data = Utils.SQLite_proj_list2obj(file) ?? throw new DataException("Не верная структура SQLite (.db)-файла списка проектов!"); } catch (Exception e) { Log.Write("Неудачная попытка загрузить список проектов:\n" + e); return; }
+            foreach (var path in data) {
+                project_paths.Add(path);
+                LoadProject(path);
             }
         }
 
@@ -93,13 +92,12 @@ namespace LogicSimulator.Models {
         }
         internal void AppendProject(Project proj) {
             if (proj.FileDir == null || proj.FileName == null) return;
-            Log.Write("YEAH 1");
 
             var path = Path.Combine(proj.FileDir, proj.FileName);
             if (project_paths.Contains(path)) return;
-            Log.Write("YEAH 2");
 
             project_paths.Add(path);
+            if (!projects.Contains(proj)) projects.Add(proj);
             SaveProjectList();
         }
 
@@ -111,9 +109,10 @@ namespace LogicSimulator.Models {
             };
             var task = dlg.ShowAsync(parent);
             return task.GetAwaiter().GetResult();
-
-            /* var dlg = new OpenFileDialog {
-                Title = "Выберите файл, в который надо сохранить новый проект"
+        }
+        internal Project? SelectProjectFile(Window parent) {
+            var dlg = new OpenFileDialog {
+                Title = "Выберите файл с проектом (proj_*.json), который нужно открыть"
             };
             dlg.Filters?.Add(new FileDialogFilter() { Name = "JSON Files", Extensions = { "json" } });
             dlg.Filters?.Add(new FileDialogFilter() { Name = "All Files", Extensions = { "*" } });
@@ -121,7 +120,14 @@ namespace LogicSimulator.Models {
 
             var task = dlg.ShowAsync(parent);
             var res = task.GetAwaiter().GetResult();
-            Log.Write("res: " + res);*/
+            if (res == null) return null;
+
+            var path = res[0];
+            if (project_paths.Contains(path)) { Log.Write("Этот проект уже в списке проектов"); return null; }
+
+            var proj = LoadProject(path);
+            if (proj != null) AppendProject(proj);
+            return proj;
         }
     }
 }

@@ -99,9 +99,11 @@ namespace LogicSimulator.Views.Shapes {
             UpdateJoins(global);
         }
         public void ChangeScale(double scale, bool global = false) {
+            var fix = GetPos();
             base_size *= scale;
             width *= scale;
             height *= scale;
+            Move(fix, global);
             RecalcSizes();
             UpdateJoins(global);
         }
