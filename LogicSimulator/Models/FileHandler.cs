@@ -11,6 +11,7 @@ namespace LogicSimulator.Models {
         readonly string AppData;
         readonly List<Project> projects = new();
         readonly List<string> project_paths = new();
+        readonly Dictionary<string, Project> proj_dict = new();
 
         public FileHandler() {
             string app_data = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -22,6 +23,15 @@ namespace LogicSimulator.Models {
 
 
 
+        private void AddProject(Project proj) {
+            if (proj.FileDir == null || proj.FileName == null) return;
+
+            var path = Path.Combine(proj.FileDir, proj.FileName);
+            if (proj_dict.ContainsKey(path)) return;
+
+            proj_dict[path] = proj;
+            projects.Add(proj);
+        }
         private static string GetProjectFileName(string dir) {
             int n = 0;
             while (true) {
@@ -41,7 +51,7 @@ namespace LogicSimulator.Models {
             try {
                 var obj = Utils.Xml2obj(File.ReadAllText(Path.Combine(dir, fileName))) ?? throw new DataException("Не верная структура XML-файла проекта!");
                 var proj = new Project(this, dir, fileName, obj);
-                if (!projects.Contains(proj)) projects.Add(proj);
+                AddProject(proj);
                 return proj;
             } catch (Exception e) { Log.Write("Неудачная попытка загрузить проект:\n" + e); }
             return null;
@@ -97,7 +107,7 @@ namespace LogicSimulator.Models {
             if (project_paths.Contains(path)) return;
 
             project_paths.Add(path);
-            if (!projects.Contains(proj)) projects.Add(proj);
+            AddProject(proj);
             SaveProjectList();
         }
 
@@ -123,10 +133,10 @@ namespace LogicSimulator.Models {
             if (res == null) return null;
 
             var path = res[0];
-            if (project_paths.Contains(path)) { Log.Write("Этот проект уже в списке проектов"); return null; }
-
-            var proj = LoadProject(path);
-            if (proj != null) AppendProject(proj);
+            if (!proj_dict.TryGetValue(path, out var proj)) {
+                proj = LoadProject(path);
+                if (proj != null) AppendProject(proj);
+            }
             return proj;
         }
     }

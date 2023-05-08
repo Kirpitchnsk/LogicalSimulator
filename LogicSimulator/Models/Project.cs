@@ -15,7 +15,7 @@ namespace LogicSimulator.Models {
         public string? FileDir { get; private set; }
         public string? FileName { get; set; }
 
-        private FileHandler parent;
+        private readonly FileHandler parent;
 
         public Project(FileHandler parent) { // Новый проект
             this.parent = parent;
@@ -77,7 +77,7 @@ namespace LogicSimulator.Models {
             foreach (var scheme in schemes) scheme.UpdateProps();
         }
 
-        public Scheme GetFirstCheme() => schemes[0];
+        public Scheme GetFirstScheme() => schemes[0];
 
 
 

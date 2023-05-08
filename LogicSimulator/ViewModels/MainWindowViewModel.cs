@@ -99,9 +99,9 @@ namespace LogicSimulator.ViewModels {
         object? old_b_child_tag;
         string? prev_scheme_name;
 
-        public static string ProjName { get => current_proj == null ? "???" : current_proj.Name; }
+        public string ProjName { get => CurrentProj == null ? "???" : CurrentProj.Name; }
 
-        public static ObservableCollection<Scheme> Schemes { get => current_proj == null ? new() : current_proj.schemes; }
+        public ObservableCollection<Scheme> Schemes { get => CurrentProj == null ? new() : CurrentProj.schemes; }
 
 
 
@@ -138,7 +138,7 @@ namespace LogicSimulator.ViewModels {
 
                 if (newy.Text != prev_scheme_name) {
                     // tb.Text = newy.Text;
-                    if ((string?) tb.Tag == "p_name") current_proj?.ChangeName(newy.Text);
+                    if ((string?) tb.Tag == "p_name") CurrentProj?.ChangeName(newy.Text);
                     else if (old_b_child_tag is Scheme scheme) scheme.ChangeName(newy.Text);
                 }
 
@@ -148,7 +148,7 @@ namespace LogicSimulator.ViewModels {
         }
 
         public void Update() {
-            Log.Write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n    Текущий проект:\n" + current_proj);
+            Log.Write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n    Текущий проект:\n" + CurrentProj);
 
             map.ImportScheme();
 
@@ -158,7 +158,7 @@ namespace LogicSimulator.ViewModels {
             if (mw != null) mw.Width++; // ГОРАААААААААААААЗДО больше толку, чем от всех этих НЕРАБОЧИХ через раз RaisePropertyChanged
         }
 
-        public static bool CanSave { get => current_proj != null && current_proj.CanSave(); }
+        public bool CanSave { get => CurrentProj != null && CurrentProj.CanSave(); }
 
         /*
          * Кнопочки!
@@ -167,15 +167,15 @@ namespace LogicSimulator.ViewModels {
         public void FuncComm(string Comm) {
             switch (Comm) {
             case "Create":
-                new LauncherWindow().Show();
-                mw?.Hide();
+                var newy = map.filer.CreateProject();
+                CurrentProj = newy;
+                Update();
                 break;
             case "Open":
                 if (mw == null) break;
                 var selected = map.filer.SelectProjectFile(mw);
                 if (selected != null) {
-                    current_proj = selected;
-                    map.current_scheme = current_proj.GetFirstCheme();
+                    CurrentProj = selected;
                     Update();
                 }
                 break;
@@ -184,8 +184,12 @@ namespace LogicSimulator.ViewModels {
                 break;
             case "SaveAs":
                 map.Export();
-                if (mw != null) current_proj?.SaveAs(mw);
+                if (mw != null) CurrentProj?.SaveAs(mw);
                 this.RaisePropertyChanged(new(nameof(CanSave)));
+                break;
+            case "ExitToLauncher":
+                new LauncherWindow().Show();
+                mw?.Hide();
                 break;
             case "Exit":
                 mw?.Close();
@@ -195,8 +199,8 @@ namespace LogicSimulator.ViewModels {
 
         public ReactiveCommand<string, Unit> Comm { get; }
 
-        static void FuncNewItem() {
-            current_proj?.AddScheme(null);
+        private void FuncNewItem() {
+            CurrentProj?.AddScheme(null);
         }
 
         public ReactiveCommand<Unit, Unit> NewItem { get; }

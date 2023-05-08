@@ -39,6 +39,7 @@
 				<MenuItem Header="Открыть проект" Command="{Binding Comm}" CommandParameter="Open"/>
 				<MenuItem Header="Сохранить текущую схему" Command="{Binding Comm}" CommandParameter="Save" IsEnabled="{Binding CanSave}"/>
 				<MenuItem Header="Сохранить проект как..." Command="{Binding Comm}" CommandParameter="SaveAs"/>
+				<MenuItem Header="Выйти в лаунчер" Command="{Binding Comm}" CommandParameter="ExitToLauncher"/>
 				<MenuItem Header="Выйти" Command="{Binding Comm}" CommandParameter="Exit"/>
 			</MenuItem>
 			<MenuItem Header="Опции">

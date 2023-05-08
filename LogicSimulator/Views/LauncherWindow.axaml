@@ -24,7 +24,7 @@
 			<Setter Property="BorderBrush" Value="#a0f"/>
 			<Setter Property="CornerRadius" Value="8"/>
 			<Setter Property="Padding" Value="10"/>
-			<Setter Property="FontSize" Value="32"/>
+			<Setter Property="FontSize" Value="24"/>
 			<Setter Property="HorizontalAlignment" Value="Center"/>
 		</Style>
 		<Style Selector="Border.b">
@@ -41,10 +41,11 @@
 		</Style>
 	</Window.Styles>
 
-	<Grid RowDefinitions="auto,auto,*,auto">
+	<Grid RowDefinitions="auto,auto,auto,*,auto">
 		<Button Command="{Binding Create}">Создать новый проект</Button>
-		<TextBlock Grid.Row="1" Classes="tb">Перечень проектов:</TextBlock>
-		<ListBox Grid.Row="2" Items="{Binding ProjectList}" DoubleTapped="DTapped" Padding="10">
+		<Button Grid.Row="1" Command="{Binding Open}">Открыть проект</Button>
+		<TextBlock Grid.Row="2" Classes="tb">Перечень проектов:</TextBlock>
+		<ListBox Grid.Row="3" Items="{Binding ProjectList}" DoubleTapped="DTapped" Padding="10">
 			<ListBox.ItemTemplate>
 				<DataTemplate>
 					<Border Classes="b">
@@ -53,6 +54,6 @@
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 		</ListBox>
-		<Button Grid.Row="3" Command="{Binding Exit}">Выход</Button>
+		<Button Grid.Row="4" Command="{Binding Exit}">Выход</Button>
 	</Grid>
 </Window>

@@ -12,23 +12,36 @@ namespace LogicSimulator.ViewModels {
 
         public LauncherWindowViewModel() {
             Create = ReactiveCommand.Create<Unit, Unit>(_ => { FuncCreate(); return new Unit(); });
+            Open = ReactiveCommand.Create<Unit, Unit>(_ => { FuncOpen(); return new Unit(); });
             Exit = ReactiveCommand.Create<Unit, Unit>(_ => { FuncExit(); return new Unit(); });
         }
         public void AddWindow(Window lw) => me = lw;
 
         void FuncCreate() {
             var newy = map.filer.CreateProject();
-            current_proj = newy;
-            map.current_scheme = current_proj.GetFirstCheme();
+            CurrentProj = newy;
+            mw.Show();
+            mw.Update();
+            me?.Close();
+        }
+        void FuncOpen() {
+            if (me == null) return;
+
+            var selected = map.filer.SelectProjectFile(me);
+            if (selected == null) return;
+
+            CurrentProj = selected;
             mw.Show();
             mw.Update();
             me?.Close();
         }
         void FuncExit() {
             me?.Close();
+            mw.Close();
         }
 
         public ReactiveCommand<Unit, Unit> Create { get; }
+        public ReactiveCommand<Unit, Unit> Open { get; }
         public ReactiveCommand<Unit, Unit> Exit { get; }
 
 
@@ -42,8 +55,8 @@ namespace LogicSimulator.ViewModels {
 
             if (src is not TextBlock tb || tb.Tag is not Project proj) return;
 
-            current_proj = proj;
-            map.current_scheme = current_proj.GetFirstCheme();
+            CurrentProj = proj;
+
             mw.Show();
             mw.Update();
             me?.Close();
