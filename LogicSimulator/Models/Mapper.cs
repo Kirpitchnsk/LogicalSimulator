@@ -436,7 +436,7 @@ namespace LogicSimulator.Models {
                     var delta = item_pos - pos;
                     delta *= scale;
                     var new_pos = delta + pos;
-                    gate.Move(new_pos, true);
+                    gate.Move(new_pos, false);
                 }
                 UpdateMarker();
                 break;

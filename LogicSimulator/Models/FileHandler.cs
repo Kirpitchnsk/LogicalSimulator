@@ -1,7 +1,6 @@
 using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Data;
 using System.IO;
 
@@ -23,17 +22,17 @@ namespace LogicSimulator.Models {
         public static string GetProjectFileName() {
             int n = 0;
             while (true) {
-                string name = "proj_" + ++n + ".yaml";
+                string name = "proj_" + ++n + ".json";
                 if (!File.Exists(dir + name)) return name;
             }
         }
-        public static string GetSchemeFileName() {
+        /* public static string GetSchemeFileName() {
             int n = 0;
             while (true) {
                 string name = "scheme_" + ++n + ".xml";
                 if (!File.Exists(dir + name)) return name;
             }
-        }
+        }*/
 
 
 
@@ -44,31 +43,28 @@ namespace LogicSimulator.Models {
         }
         private Project? LoadProject(string fileName) {
             try {
-                var obj = Utils.Yaml2obj(File.ReadAllText(dir + fileName)) ?? throw new DataException("Не верная структура YAML-файла проекта!");
+                var obj = Utils.Xml2obj(File.ReadAllText(dir + fileName)) ?? throw new DataException("Не верная структура XML-файла проекта!");
                 var proj = new Project(fileName, obj);
                 projects.Add(proj);
                 return proj;
             } catch (Exception e) { Log.Write("Неудачная попытка загрузить проект:\n" + e); }
             return null;
         }
-        public static Scheme? LoadScheme(Project parent, string fileName) {
+        /* public static Scheme? LoadScheme(Project parent, string fileName) {
             try {
                 var obj = Utils.Xml2obj(File.ReadAllText(dir + fileName)) ?? throw new DataException("Не верная структура XML-файла схемы!");
                 var scheme = new Scheme(parent, fileName, obj);
                 return scheme;
             } catch (Exception e) { Log.Write("Неудачная попытка загрузить схему:\n" + e); }
             return null;
-        }
+        }*/
 
 
 
         public static void SaveProject(Project proj) {
-            var data = Utils.Obj2yaml(proj.Export());
-            File.WriteAllText(dir + proj.FileName, data);
-        }
-        public static void SaveScheme(Scheme scheme) {
-            var data = Utils.Obj2xml(scheme.Export());
-            File.WriteAllText(dir + scheme.FileName, data);
+            var data = Utils.Obj2json(proj.Export());
+            var name = proj.FileName.Split('.')[0] + ".xml";
+            File.WriteAllText(dir + name, data);
         }
 
         public Project[] GetSortedProjects() {
@@ -78,8 +74,8 @@ namespace LogicSimulator.Models {
 
 
 
-        public static void RemoveScheme(Scheme me) {
+        /* public static void RemoveScheme(Scheme me) {
             File.Delete(dir + me.FileName);
-        }
+        }*/
     }
 }

@@ -7,8 +7,6 @@ using LogicSimulator.Views.Shapes;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.IO;
 using System.Reactive;
 
@@ -150,7 +148,7 @@ namespace LogicSimulator.ViewModels {
         }
 
         public void Update() {
-            Log.Write("Текущий проект:\n" + current_proj);
+            Log.Write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n    Текущий проект:\n" + current_proj);
 
             map.ImportScheme();
 

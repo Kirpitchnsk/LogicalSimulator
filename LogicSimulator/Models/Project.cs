@@ -10,7 +10,6 @@ namespace LogicSimulator.Models {
         public long Modified;
 
         public ObservableCollection<Scheme> schemes = new();
-        public List<string> scheme_files = new();
         public string FileName { get; }
 
         public Project() { // Новый проект
@@ -18,7 +17,6 @@ namespace LogicSimulator.Models {
             Created = Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             FileName = FileHandler.GetProjectFileName();
             CreateScheme();
-            loaded = true;
         }
 
         public Project(string fileName, object data) { // Импорт
@@ -40,9 +38,10 @@ namespace LogicSimulator.Models {
 
             if (!dict.TryGetValue("schemes", out var value4)) throw new Exception("В проекте нет списка схем");
             if (value4 is not List<object> arr) throw new Exception("Списко схем проекта - не массив строк");
-            foreach (var file in arr) {
-                if (file is not string str) throw new Exception("Одно из файловых имёт списка схем проекта - не строка");
-                scheme_files.Add(str);
+            foreach (var s_data in arr) {
+                if (s_data == null) throw new Exception("Одно из файловых имёт списка схем проекта - null");
+                var scheme = new Scheme(this, s_data);
+                schemes.Add(scheme);
             }
         }
 
@@ -51,8 +50,6 @@ namespace LogicSimulator.Models {
         public Scheme CreateScheme() {
             var scheme = new Scheme(this);
             schemes.Add(scheme);
-            scheme.Save();
-            scheme_files.Add(scheme.FileName);
             Save();
             return scheme;
         }
@@ -60,34 +57,18 @@ namespace LogicSimulator.Models {
             var scheme = new Scheme(this);
             int pos = prev == null ? 0 : schemes.IndexOf(prev) + 1;
             schemes.Insert(pos, scheme);
-            scheme.Save();
-            scheme_files.Insert(pos, scheme.FileName);
             Save();
             return scheme;
         }
         public void RemoveScheme(Scheme me) {
             schemes.Remove(me);
-            scheme_files.Remove(me.FileName);
             Save();
-            FileHandler.RemoveScheme(me);
         }
         public void UpdateList() {
             foreach (var scheme in schemes) scheme.UpdateProps();
         }
 
-        bool loaded = false;
-        private void LoadSchemes() {
-            if (loaded) return;
-            foreach (var fileName in scheme_files) {
-                var scheme = FileHandler.LoadScheme(this, fileName);
-                if (scheme != null) schemes.Add(scheme);
-            }
-            loaded = true;
-        }
-        public Scheme GetFirstCheme() {
-            LoadSchemes();
-            return schemes[0];
-        }
+        public Scheme GetFirstCheme() => schemes[0];
 
 
 
@@ -96,7 +77,7 @@ namespace LogicSimulator.Models {
                 ["name"] = Name,
                 ["created"] = Created,
                 ["modified"] = Modified,
-                ["schemes"] = schemes.Select(x => x.FileName).ToArray(),
+                ["schemes"] = schemes.Select(x => x.Export()).ToArray(),
             };
         }
 

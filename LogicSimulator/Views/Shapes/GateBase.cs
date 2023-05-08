@@ -435,7 +435,8 @@ namespace LogicSimulator.Views.Shapes {
                     else Log.Write("Неверный тип pos-записи элемента: " + value);
                     break;
                 case "base_size":
-                    if (value is double @b_size) new_b_size = @b_size;
+                    double? b_size = value.ToDouble();
+                    if (b_size != null) new_b_size = (double) b_size;
                     else Log.Write("Неверный тип base_size-записи элемента: " + value);
                     break;
                 case "size":

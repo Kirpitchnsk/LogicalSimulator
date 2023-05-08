@@ -15,7 +15,6 @@ namespace LogicSimulator.Models {
         public object[] joins;
         public bool[] states;
 
-        public string FileName { get; }
         private readonly Project parent;
 
         public Scheme(Project p) { // Новая схема
@@ -23,7 +22,6 @@ namespace LogicSimulator.Models {
             Name = "Newy";
             items = joins = Array.Empty<object>();
             states = Array.Empty<bool>();
-            FileName = FileHandler.GetSchemeFileName();
             parent = p;
 
             Open = ReactiveCommand.Create<Unit, Unit>(_ => { FuncOpen(); return new Unit(); });
@@ -31,8 +29,7 @@ namespace LogicSimulator.Models {
             Delete = ReactiveCommand.Create<Unit, Unit>(_ => { FuncDelete(); return new Unit(); });
         }
 
-        public Scheme(Project p, string fileName, object data) { // Импорт
-            FileName = fileName;
+        public Scheme(Project p, object data) { // Импорт
             parent = p;
 
             if (data is not Dictionary<string, object> dict) throw new Exception("Ожидался словарь в корне схемы");
@@ -86,12 +83,10 @@ namespace LogicSimulator.Models {
                 ["states"] = states,
             };
         }
-        public void Save() => FileHandler.SaveScheme(this);
         public void Update() {
             Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             parent.Modified = Modified;
             parent.Save();
-            Save();
         }
 
         public override string ToString() => Name;
