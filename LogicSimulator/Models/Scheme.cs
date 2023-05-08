@@ -2,7 +2,6 @@
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive;
 
 namespace LogicSimulator.Models {
@@ -13,17 +12,15 @@ namespace LogicSimulator.Models {
 
         public object[] items;
         public object[] joins;
-        public bool[] states;
+        public string states;
 
-        public string FileName { get; }
         private readonly Project parent;
 
         public Scheme(Project p) { // Новая схема
             Created = Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             Name = "Newy";
             items = joins = Array.Empty<object>();
-            states = Array.Empty<bool>();
-            FileName = FileHandler.GetSchemeFileName();
+            states = "0";
             parent = p;
 
             Open = ReactiveCommand.Create<Unit, Unit>(_ => { FuncOpen(); return new Unit(); });
@@ -31,8 +28,7 @@ namespace LogicSimulator.Models {
             Delete = ReactiveCommand.Create<Unit, Unit>(_ => { FuncDelete(); return new Unit(); });
         }
 
-        public Scheme(Project p, string fileName, object data) { // Импорт
-            FileName = fileName;
+        public Scheme(Project p, object data) { // Импорт
             parent = p;
 
             if (data is not Dictionary<string, object> dict) throw new Exception("Ожидался словарь в корне схемы");
@@ -58,15 +54,15 @@ namespace LogicSimulator.Models {
             joins = arr2.ToArray();
 
             if (!dict.TryGetValue("states", out var value6)) throw new Exception("В схеме нет списка состояний");
-            if (value6 is not List<object> arr3) throw new Exception("Список состояний схемы - не массив bool");
-            states = arr3.Select(x => (bool) x).ToArray();
+            if (value6 is not string arr3) throw new Exception("Список состояний схемы - не строка");
+            states = arr3;
 
             Open = ReactiveCommand.Create<Unit, Unit>(_ => { FuncOpen(); return new Unit(); });
             NewItem = ReactiveCommand.Create<Unit, Unit>(_ => { FuncNewItem(); return new Unit(); });
             Delete = ReactiveCommand.Create<Unit, Unit>(_ => { FuncDelete(); return new Unit(); });
         }
 
-        public void Update(object[] items, object[] joins, bool[] states) {
+        public void Update(object[] items, object[] joins, string states) {
             this.items = items;
             this.joins = joins;
             this.states = states;
@@ -86,12 +82,10 @@ namespace LogicSimulator.Models {
                 ["states"] = states,
             };
         }
-        public void Save() => FileHandler.SaveScheme(this);
         public void Update() {
             Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             parent.Modified = Modified;
             parent.Save();
-            Save();
         }
 
         public override string ToString() => Name;

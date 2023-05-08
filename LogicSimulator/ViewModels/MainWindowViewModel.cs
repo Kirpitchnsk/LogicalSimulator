@@ -7,8 +7,6 @@ using LogicSimulator.Views.Shapes;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.IO;
 using System.Reactive;
 
@@ -101,9 +99,9 @@ namespace LogicSimulator.ViewModels {
         object? old_b_child_tag;
         string? prev_scheme_name;
 
-        public static string ProjName { get => current_proj == null ? "???" : current_proj.Name; }
+        public string ProjName { get => CurrentProj == null ? "???" : CurrentProj.Name; }
 
-        public static ObservableCollection<Scheme> Schemes { get => current_proj == null ? new() : current_proj.schemes; }
+        public ObservableCollection<Scheme> Schemes { get => CurrentProj == null ? new() : CurrentProj.schemes; }
 
 
 
@@ -140,7 +138,7 @@ namespace LogicSimulator.ViewModels {
 
                 if (newy.Text != prev_scheme_name) {
                     // tb.Text = newy.Text;
-                    if ((string?) tb.Tag == "p_name") current_proj?.ChangeName(newy.Text);
+                    if ((string?) tb.Tag == "p_name") CurrentProj?.ChangeName(newy.Text);
                     else if (old_b_child_tag is Scheme scheme) scheme.ChangeName(newy.Text);
                 }
 
@@ -150,33 +148,48 @@ namespace LogicSimulator.ViewModels {
         }
 
         public void Update() {
-            Log.Write("Текущий проект:\n" + current_proj);
+            Log.Write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n    Текущий проект:\n" + CurrentProj);
 
             map.ImportScheme();
 
-            /*this.RaisePropertyChanged(new(nameof(ProjName)));
+            this.RaisePropertyChanged(new(nameof(ProjName)));
             this.RaisePropertyChanged(new(nameof(Schemes)));
-            this.RaisePropertyChanged(new(nameof(Logg)));*/ // А вот это действительно странно ;'-} Хотя даже в этом случае оно несколько тиков глючит
+            this.RaisePropertyChanged(new(nameof(CanSave)));
             if (mw != null) mw.Width++; // ГОРАААААААААААААЗДО больше толку, чем от всех этих НЕРАБОЧИХ через раз RaisePropertyChanged
         }
+
+        public bool CanSave { get => CurrentProj != null && CurrentProj.CanSave(); }
 
         /*
          * Кнопочки!
          */
 
         public void FuncComm(string Comm) {
-            // Log.Write("Comm: " + Comm);
             switch (Comm) {
             case "Create":
-                new LauncherWindow().Show();
-                mw?.Hide();
+                var newy = map.filer.CreateProject();
+                CurrentProj = newy;
+                Update();
                 break;
             case "Open":
-                new LauncherWindow().Show();
-                mw?.Hide();
+                if (mw == null) break;
+                var selected = map.filer.SelectProjectFile(mw);
+                if (selected != null) {
+                    CurrentProj = selected;
+                    Update();
+                }
                 break;
             case "Save":
                 map.Export();
+                break;
+            case "SaveAs":
+                map.Export();
+                if (mw != null) CurrentProj?.SaveAs(mw);
+                this.RaisePropertyChanged(new(nameof(CanSave)));
+                break;
+            case "ExitToLauncher":
+                new LauncherWindow().Show();
+                mw?.Hide();
                 break;
             case "Exit":
                 mw?.Close();
@@ -186,8 +199,8 @@ namespace LogicSimulator.ViewModels {
 
         public ReactiveCommand<string, Unit> Comm { get; }
 
-        static void FuncNewItem() {
-            current_proj?.AddScheme(null);
+        private void FuncNewItem() {
+            CurrentProj?.AddScheme(null);
         }
 
         public ReactiveCommand<Unit, Unit> NewItem { get; }
