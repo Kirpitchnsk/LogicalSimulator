@@ -20,7 +20,7 @@ namespace LogicSimulator.Models {
         public Line Marker { get => marker; }
         public Rectangle Marker2 { get => marker2; }
 
-        readonly Simulator sim = new();
+        public readonly Simulator sim = new(); // забавно, но без public рефлексия вообще не видит этот параметр, от чего ER-diagram_exTRACTOR теряет одну стрелочку зависимости...
 
         public Canvas canv = new();
 

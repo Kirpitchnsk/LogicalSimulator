@@ -1,8 +1,10 @@
-﻿using Avalonia.Data;
+﻿using Avalonia.Controls.Shapes;
+using Avalonia.Data;
 using ER_diagram_exTRACTOR;
 using LogicSimulator.Models;
 using ReactiveUI;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters;
 
 
 // LogicSimulator.Program.Main(Array.Empty<string>()); Ура! Консольный режим изобретён ;'-}
@@ -11,19 +13,30 @@ using System.Reflection;
 
 // Вот это по нашему:
 Type[] types = (Assembly.GetAssembly(typeof(Mapper)) ?? throw new Exception("Чё?!")).GetTypes();
+List<Type> passed_types = new();
+Dictionary<Type, int> type_to_num = new();
 
 List<object> items = new();
 int n = 0;
 foreach (Type type in types) {
     var name = type.FullName ?? throw new Exception("Чё?!");
     if (name.Contains('+') || !name.StartsWith("LogicSimulator.")) continue;
+
     Console.WriteLine("\nT: " + name);
+    passed_types.Add(type);
+    type_to_num[type] = n;
 
     List<object> attrs = new(), meths = new();
     Dictionary<string, object?> data = new() {
         ["name"] = type.Name,
-        ["stereo"] = 0,
-        ["access"] = 1,
+        ["stereo"] =
+            type.IsAbstract ?
+                (type.IsSealed ? 1 /* static */ : 2 /* abstract */ ) :
+            type.IsInterface ? 3 /* interface */ : 0,
+        ["access"] = type.IsPublic ? 1 :
+                     type.IsAbstract ? 2 :
+                     type.IsInterface ? 3 :
+                     0, // private
         ["attributes"] = attrs,
         ["methods"] = meths,
     };
@@ -157,13 +170,35 @@ foreach (Type type in types) {
                 });
             }
             break;
+        default:
+            Console.WriteLine("!!!Пропущено!!!\n");
+            break;
         }
     }
 }
 
+List<object> joins = new();
+n = 0;
+foreach (Type type in passed_types) {
+    Type Base = type.BaseType ?? typeof(object);
+    int me_num = n++;
+    if (type_to_num.TryGetValue(Base, out int num))
+        joins.Add(new object[] { me_num, 3, 1.0, num, 0, 0.0, 0 });
+
+    foreach (var i_type in type.GetInterfaces())
+        if (type_to_num.TryGetValue(i_type, out int num2))
+            joins.Add(new object[] { me_num, 3, 1.0, num2, 0, 0.0, 1 });
+
+    List<Type> u_type_arr = new();
+    Functions.GetUsedTypes(type, u_type_arr);
+    foreach (var u_type in u_type_arr)
+        if (type_to_num.TryGetValue(u_type, out int num3) && me_num != num3)
+            joins.Add(new object[] { me_num, 3, 1.0, num3, 0, 0.0, 2 });
+}
+
 Dictionary<string, object?> res = new() {
     ["items"] = items,
-    ["joins"] = new List<object>(),
+    ["joins"] = joins,
 };
 
 File.WriteAllText("../../../../../lab8/DiagramEditor/Export.json", Utils.Obj2json(res));

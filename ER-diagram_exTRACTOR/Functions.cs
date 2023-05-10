@@ -1,4 +1,6 @@
-﻿namespace ER_diagram_exTRACTOR {
+﻿using System.Reflection;
+
+namespace ER_diagram_exTRACTOR {
     internal class Functions {
         public static string TypeRenamer(Type? type) {
             if (type == null) return "???";
@@ -22,14 +24,59 @@
                 "Object" => "object",
                 _ => arr[0]
             };
-            string res = string.Join('[', arr);
-            if (res.EndsWith('&')) res = "ref " + res[..^1];
 
             var gen = type.GetGenericArguments();
-            if (gen.Length > 0) res = res.Split('\x60')[0] +
+            if (gen.Length > 0) arr[0] = arr[0].Split('\x60')[0] +
                 "<" + string.Join(", ", gen.Select(TypeRenamer)) + ">";
 
+            string res = string.Join('[', arr);
+            if (res.EndsWith('&')) res = "ref " + res[..^1];
             return res;
+        }
+
+        public static void GetUsedTypes2(Type? type, List<Type> res) {
+            if (type == null) return;
+            var gen = type.GetGenericArguments();
+            foreach (var type2 in gen) GetUsedTypes2(type2, res);
+            if (gen.Length == 0) res.Add(type);
+        }
+        public static void GetUsedTypes(Type type, List<Type> res) {
+            foreach (var mem in type.GetMembers()) {
+                string mem_name = mem.Name;
+                var meth_arr = type.GetMethods();
+                var ctor_arr = type.GetConstructors();
+                if (mem.DeclaringType != type) continue;
+
+                switch (mem.MemberType) {
+                case MemberTypes.Field:
+                    var field_info = type.GetField(mem_name) ?? throw new Exception("Чё?!");
+                    GetUsedTypes2(field_info.FieldType, res);
+                    break;
+                case MemberTypes.Event:
+                    var event_info = type.GetEvent(mem_name) ?? throw new Exception("Чё?!");
+                    GetUsedTypes2(event_info.EventHandlerType, res);
+                    break;
+                case MemberTypes.Property:
+                    var prop_info = type.GetProperty(mem_name) ?? throw new Exception("Чё?!");
+                    GetUsedTypes2(prop_info.PropertyType, res);
+                    break;
+                case MemberTypes.Method:
+                    foreach (var method_info in meth_arr.Where(x => x.Name == mem_name)) {
+                        List<object> props = new();
+                        foreach (var param in method_info.GetParameters())
+                            GetUsedTypes2(param.ParameterType, res);
+                        GetUsedTypes2(method_info.ReturnType, res);
+                    }
+                    break;
+                case MemberTypes.Constructor:
+                    foreach (var ctor_info in ctor_arr.Where(x => x.Name == mem_name)) {
+                        List<object> props = new();
+                        foreach (var param in ctor_info.GetParameters())
+                            GetUsedTypes2(param.ParameterType, res);
+                    }
+                    break;
+                }
+            }
         }
     }
 }
