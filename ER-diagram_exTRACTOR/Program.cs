@@ -190,15 +190,32 @@ foreach (Type type in passed_types) {
             joins.Add(new object[] { me_num, 3, 1.0, num2, 0, 0.0, 1 });
 
     List<Type> u_type_arr = new();
-    Functions.GetUsedTypes(type, u_type_arr);
+    Functions.GetUsedTypes(type, u_type_arr, 0);
     foreach (var u_type in u_type_arr)
         if (type_to_num.TryGetValue(u_type, out int num3) && me_num != num3)
             joins.Add(new object[] { me_num, 3, 1.0, num3, 0, 0.0, 2 });
+
+    List<Type> cont_type_arr = new();
+    Functions.GetUsedTypes(type, cont_type_arr, 1);
+    foreach (var cont_type in cont_type_arr)
+        if (type_to_num.TryGetValue(cont_type, out int num3) && me_num != num3)
+            joins.Add(new object[] { num3, 3, 1.0, me_num, 0, 0.0, 4 });
+}
+
+List<object> f_joins = new();
+Dictionary<long, bool> used_joins = new();
+foreach (var obj in joins) {
+    var join = (object[]) obj;
+    long pack = ((int) join[0]) << 34 | ((int) join[3]) << 4 | ((int) join[6]);
+    if (used_joins.ContainsKey(pack)) continue;
+
+    used_joins[pack] = true;
+    f_joins.Add(obj);
 }
 
 Dictionary<string, object?> res = new() {
     ["items"] = items,
-    ["joins"] = joins,
+    ["joins"] = f_joins,
 };
 
 File.WriteAllText("../../../../../lab8/DiagramEditor/Export.json", Utils.Obj2json(res));
