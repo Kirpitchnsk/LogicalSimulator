@@ -47,7 +47,7 @@ foreach (Type type in types) {
 
             attrs.Add(new Dictionary<string, object?>() {
                 ["name"] = mem.Name,
-                ["type"] = Functions.TypeRenamer(field_info.FieldType.Name),
+                ["type"] = Functions.TypeRenamer(field_info.FieldType),
                 ["access"] = field_info.IsPrivate ? 0 : // private
                              field_info.IsPublic ? 1 : // public
                              field_info.IsFamily ? 2 : // protected
@@ -60,11 +60,10 @@ foreach (Type type in types) {
             break;
         case MemberTypes.Event:
             var event_info = type.GetEvent(mem_name) ?? throw new Exception("Чё?!");
-            var e_type = event_info.EventHandlerType;
 
             attrs.Add(new Dictionary<string, object?>() {
                 ["name"] = mem.Name,
-                ["type"] = Functions.TypeRenamer(e_type != null ? e_type.Name : "???"),
+                ["type"] = Functions.TypeRenamer(event_info.EventHandlerType),
                 ["access"] = 1, // public
                 ["readonly"] = false,
                 ["static"] = false,
@@ -79,7 +78,7 @@ foreach (Type type in types) {
 
             attrs.Add(new Dictionary<string, object?>() {
                 ["name"] = mem.Name,
-                ["type"] = Functions.TypeRenamer(prop_info.PropertyType.Name),
+                ["type"] = Functions.TypeRenamer(prop_info.PropertyType),
                 ["access"] = getter != null ?
                     getter.IsPrivate ? 0 : // private
                     getter.IsPublic ? 1 : // public
@@ -113,14 +112,14 @@ foreach (Type type in types) {
                 foreach (var param in method_info.GetParameters()) {
                     props.Add(new Dictionary<string, object?>() {
                         ["name"] = param.Name,
-                        ["type"] = Functions.TypeRenamer(param.ParameterType.Name),
+                        ["type"] = Functions.TypeRenamer(param.ParameterType),
                         ["default"] = param.DefaultValue + "",
                     });
                 }
 
                 meths.Add(new Dictionary<string, object?>() {
                     ["name"] = mem.Name,
-                    ["type"] = Functions.TypeRenamer(method_info.ReturnType.Name),
+                    ["type"] = Functions.TypeRenamer(method_info.ReturnType),
                     ["access"] =
                         method_info.IsPrivate ? 0 : // private
                         method_info.IsPublic ? 1 : // public
@@ -140,7 +139,7 @@ foreach (Type type in types) {
                 foreach (var param in ctor_info.GetParameters()) {
                     props.Add(new Dictionary<string, object?>() {
                         ["name"] = param.Name,
-                        ["type"] = Functions.TypeRenamer(param.ParameterType.Name),
+                        ["type"] = Functions.TypeRenamer(param.ParameterType),
                         ["default"] = param.DefaultValue + "",
                     });
                 }

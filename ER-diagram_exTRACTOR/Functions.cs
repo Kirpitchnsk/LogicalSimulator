@@ -1,6 +1,9 @@
 ﻿namespace ER_diagram_exTRACTOR {
     internal class Functions {
-        public static string TypeRenamer(string name) {
+        public static string TypeRenamer(Type? type) {
+            if (type == null) return "???";
+
+            var name = type.Name;
             var arr = name.Split('[');
             arr[0] = arr[0] switch {
                 "Boolean" => "bool",
@@ -19,7 +22,14 @@
                 "Object" => "object",
                 _ => arr[0]
             };
-            return string.Join('[', arr);
+            string res = string.Join('[', arr);
+            if (res.EndsWith('&')) res = "ref " + res[..^1];
+
+            var gen = type.GetGenericArguments();
+            if (gen.Length > 0) res = res.Split('\x60')[0] +
+                "<" + string.Join(", ", gen.Select(TypeRenamer)) + ">";
+
+            return res;
         }
     }
 }
