@@ -14,6 +14,9 @@
                 "Half" => "half float",
                 "Single" => "float",
                 "Double" => "double",
+                "String" => "string",
+                "Void" => "void",
+                "Object" => "object",
                 _ => arr[0]
             };
             return string.Join('[', arr);

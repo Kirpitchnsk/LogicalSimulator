@@ -1,4 +1,5 @@
-﻿using ER_diagram_exTRACTOR;
+﻿using Avalonia.Data;
+using ER_diagram_exTRACTOR;
 using LogicSimulator.Models;
 using ReactiveUI;
 using System.Reflection;
@@ -35,8 +36,10 @@ foreach (Type type in types) {
         string mem_name = mem.Name;
 
         Console.WriteLine($"  {mem_name,-36} | {mem.MemberType,-12} | {mem.DeclaringType == type}");
-
         if (mem.DeclaringType != type) continue;
+
+        var meth_arr = type.GetMethods();
+        var ctor_arr = type.GetConstructors();
 
         switch (mem.MemberType) {
         case MemberTypes.Field:
@@ -52,7 +55,21 @@ foreach (Type type in types) {
                 ["readonly"] = field_info.IsInitOnly,
                 ["static"] = field_info.IsStatic,
                 ["stereo"] = 0, // common
-                ["default"] = "",
+                ["default"] = "", //    :/
+            });
+            break;
+        case MemberTypes.Event:
+            var event_info = type.GetEvent(mem_name) ?? throw new Exception("Чё?!");
+            var e_type = event_info.EventHandlerType;
+
+            attrs.Add(new Dictionary<string, object?>() {
+                ["name"] = mem.Name,
+                ["type"] = Functions.TypeRenamer(e_type != null ? e_type.Name : "???"),
+                ["access"] = 1, // public
+                ["readonly"] = false,
+                ["static"] = false,
+                ["stereo"] = 1, // event
+                ["default"] = "", //    :/
             });
             break;
         case MemberTypes.Property:
@@ -89,6 +106,57 @@ foreach (Type type in types) {
                     setter.IsAssembly ? "package" : "?") + " set; " : "") +
                 "}",
             });
+            break;
+        case MemberTypes.Method:
+            foreach (var method_info in meth_arr.Where(x => x.Name == mem_name)) {
+                List<object> props = new();
+                foreach (var param in method_info.GetParameters()) {
+                    props.Add(new Dictionary<string, object?>() {
+                        ["name"] = param.Name,
+                        ["type"] = Functions.TypeRenamer(param.ParameterType.Name),
+                        ["default"] = param.DefaultValue + "",
+                    });
+                }
+
+                meths.Add(new Dictionary<string, object?>() {
+                    ["name"] = mem.Name,
+                    ["type"] = Functions.TypeRenamer(method_info.ReturnType.Name),
+                    ["access"] =
+                        method_info.IsPrivate ? 0 : // private
+                        method_info.IsPublic ? 1 : // public
+                        method_info.IsFamily ? 2 : // protected
+                        method_info.IsAssembly ? 3 /* package */ : 0,
+                    ["stereo"] =
+                        method_info.IsStatic ? 1 :
+                        method_info.IsAbstract ? 2 :
+                        0, // common/virtual
+                    ["props"] = props,
+                });
+            }
+            break;
+        case MemberTypes.Constructor:
+            foreach (var ctor_info in ctor_arr.Where(x => x.Name == mem_name)) {
+                List<object> props = new();
+                foreach (var param in ctor_info.GetParameters()) {
+                    props.Add(new Dictionary<string, object?>() {
+                        ["name"] = param.Name,
+                        ["type"] = Functions.TypeRenamer(param.ParameterType.Name),
+                        ["default"] = param.DefaultValue + "",
+                    });
+                }
+
+                meths.Add(new Dictionary<string, object?>() {
+                    ["name"] = mem.Name,
+                    ["type"] = "self",
+                    ["access"] =
+                        ctor_info.IsPrivate ? 0 : // private
+                        ctor_info.IsPublic ? 1 : // public
+                        ctor_info.IsFamily ? 2 : // protected
+                        ctor_info.IsAssembly ? 3 /* package */ : 0,
+                    ["stereo"] = 3, // create
+                    ["props"] = props,
+                });
+            }
             break;
         }
     }
