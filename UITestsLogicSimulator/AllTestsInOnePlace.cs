@@ -1,11 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using LogicSimulator.Models;
 using LogicSimulator.ViewModels;
 using LogicSimulator.Views;
 using LogicSimulator.Views.Shapes;
+using System.Text;
 using Button = Avalonia.Controls.Button;
 
 namespace UITestsLogicSimulator {
@@ -81,6 +81,12 @@ namespace UITestsLogicSimulator {
         private void Ticks(int count) {
             while (count-- > 0) map.sim.TopSecretPublicTickMethod();
         }
+        private static void SaveProject() { // Чтобы только посмотреть, что всё соединилось как надо
+            var proj = ViewModelBase.TopSecretGetProj() ?? throw new Exception("А где проект? :/");
+            proj.SetDir("../../..");
+            proj.FileName = "tested";
+            proj.Save();
+        }
 
 
 
@@ -91,24 +97,66 @@ namespace UITestsLogicSimulator {
             SelectGate(0); // AND-gate
             Task.Delay(1).GetAwaiter().GetResult();
 
-            IGate? gate = Click(canv, 100, 100);
+            IGate? gate = Click(canv, 200, 200);
             Assert.NotNull(gate);
             var data = Export();
-            Assert.Equal("{\"name\": \"Newy\", \"created\": 123, \"modified\": 456, \"items\": [{\"id\": 0, \"pos\": \"$p$100,100\", \"size\": \"$s$90,90\", \"base_size\": 25}], \"joins\": [], \"states\": \"00\"}", data);
+            Assert.Equal("{\"name\": \"Newy\", \"created\": 123, \"modified\": 456, \"items\": [{\"id\": 0, \"pos\": \"$p$200,200\", \"size\": \"$s$90,90\", \"base_size\": 25}], \"joins\": [], \"states\": \"00\"}", data);
 
-            SelectGate(1); // OR-gate
+            SelectGate(3); // XOR-gate
             Task.Delay(1).GetAwaiter().GetResult();
 
-            IGate? gate2 = Click(canv, 150, 150);
+            IGate? gate2 = Click(canv, 300, 300);
             Assert.NotNull(gate2);
 
-            Move(gate.SecretGetPin(2), gate2.SecretGetPin(0));
+            Move(gate.SecretGetPin(2), gate2.SecretGetPin(0)); // Соединяем gate и gate2
 
             data = Export();
-            Assert.Equal("{\"name\": \"Newy\", \"created\": 123, \"modified\": 456, \"items\": [{\"id\": 0, \"pos\": \"$p$100,100\", \"size\": \"$s$90,90\", \"base_size\": 25}, {\"id\": 1, \"pos\": \"$p$150,150\", \"size\": \"$s$90,90\", \"base_size\": 25}], \"joins\": [[0, 2, \"Out\", 1, 0, \"In\"]], \"states\": \"000\"}", data);
+            Assert.Equal("{\"name\": \"Newy\", \"created\": 123, \"modified\": 456, \"items\": [{\"id\": 0, \"pos\": \"$p$200,200\", \"size\": \"$s$90,90\", \"base_size\": 25}, {\"id\": 3, \"pos\": \"$p$300,300\", \"size\": \"$s$90,90\", \"base_size\": 25}], \"joins\": [[0, 2, \"Out\", 1, 0, \"In\"]], \"states\": \"000\"}", data);
+
+            SelectGate(5); // Switch-gate
+            Task.Delay(1).GetAwaiter().GetResult();
+
+            IGate? button = Click(canv, 100, 150);
+            IGate? button2 = Click(canv, 100, 250);
+            IGate? button3 = Click(canv, 100, 350);
+            Assert.NotNull(button);
+            Assert.NotNull(button2);
+            Assert.NotNull(button3);
+
+            Move(button.SecretGetPin(0), gate.SecretGetPin(0));
+            Move(button2.SecretGetPin(0), gate.SecretGetPin(1));
+            Move(button3.SecretGetPin(0), gate2.SecretGetPin(1));
+
+            SelectGate(7); // LightBulb-gate
+            Task.Delay(1).GetAwaiter().GetResult();
+
+            IGate? ball = Click(canv, 400, 300);
+            Assert.NotNull(ball);
+
+            Move(gate2.SecretGetPin(2), ball.SecretGetPin(0));
+
+            var input = (Switch) button;
+            var input2 = (Switch) button2;
+            var input3 = (Switch) button3;
+            var output = (LightBulb) ball;
+
+            StringBuilder sb = new();
+            for (int i = 0; i < 8; i++) {
+                input.SetState((i & 4) > 0);
+                input2.SetState((i & 2) > 0);
+                input3.SetState((i & 1) > 0);
+                if (i > 0) sb.Append('|');
+                for (int tick = 0; tick < 5; tick++) {
+                    Ticks(1);
+                    sb.Append(output.GetState() ? '1' : '0');
+                }
+            }
+            Assert.Equal("00000|00111|11000|00111|11000|00111|11011|11000", sb.ToString());
+
 
             Log("Export: " + Export());
             Log("ОК!");
+            // SaveProject();
         }
     }
 }
