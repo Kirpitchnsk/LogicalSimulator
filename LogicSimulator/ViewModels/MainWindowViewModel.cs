@@ -99,9 +99,9 @@ namespace LogicSimulator.ViewModels {
         object? old_b_child_tag;
         string? prev_scheme_name;
 
-        public string ProjName { get => CurrentProj == null ? "???" : CurrentProj.Name; }
+        public static string ProjName { get => CurrentProj == null ? "???" : CurrentProj.Name; }
 
-        public ObservableCollection<Scheme> Schemes { get => CurrentProj == null ? new() : CurrentProj.schemes; }
+        public static ObservableCollection<Scheme> Schemes { get => CurrentProj == null ? new() : CurrentProj.schemes; }
 
 
 
@@ -158,7 +158,7 @@ namespace LogicSimulator.ViewModels {
             if (mw != null) mw.Width++; // ГОРАААААААААААААЗДО больше толку, чем от всех этих НЕРАБОЧИХ через раз RaisePropertyChanged
         }
 
-        public bool CanSave { get => CurrentProj != null && CurrentProj.CanSave(); }
+        public static bool CanSave { get => CurrentProj != null && CurrentProj.CanSave(); }
 
         /*
          * Кнопочки!
@@ -199,7 +199,7 @@ namespace LogicSimulator.ViewModels {
 
         public ReactiveCommand<string, Unit> Comm { get; }
 
-        private void FuncNewItem() {
+        private static void FuncNewItem() {
             CurrentProj?.AddScheme(null);
         }
 

@@ -3,7 +3,7 @@ using System.Reflection;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-[assembly: TestFramework("UITestsForMonitoringOfStudentProgress.AvaloniaUiTestFramework", "UITestsForMonitoringOfStudentProgress")]
+[assembly: TestFramework("UITestsLogicSimulator.AvaloniaUiTestFramework", "UITestsLogicSimulator")]
 [assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly, DisableTestParallelization = false, MaxParallelThreads = 1)]
 
 namespace UITestsLogicSimulator {

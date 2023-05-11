@@ -20,7 +20,7 @@ namespace UITestsLogicSimulator {
             Dispatcher.UIThread.Post(() => app.Shutdown());
         }
 
-        public static MainWindow GetMainWindow() => (MainWindow) GetApp().MainWindow;
+        public static LauncherWindow GetMainWindow() => (LauncherWindow) GetApp().MainWindow;
 
         public static IClassicDesktopStyleApplicationLifetime GetApp() {
             var app = Application.Current ?? throw new Exception("Приложение не найдено");
@@ -28,11 +28,13 @@ namespace UITestsLogicSimulator {
             return (IClassicDesktopStyleApplicationLifetime) life;
         }
 
-        public static AppBuilder BuildAvaloniaApp() =>
-            AppBuilder
+        public static AppBuilder BuildAvaloniaApp() {
+            App.lock_inc_build = true;
+            return AppBuilder
                 .Configure<App>()
                 .UsePlatformDetect()
                 .UseReactiveUI()
                 .UseHeadless(); // Need a package Avalonia.Headless 0.10.18 (уже 0.10.19) from NuGet for this method
+        }
     }
 }
