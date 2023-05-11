@@ -36,6 +36,9 @@
     <Compile Update="Views\LauncherWindow.axaml.cs">
       <DependentUpon>LauncherWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Shapes\AND_8.axaml.cs">
+      <DependentUpon>AND_8.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Shapes\NAND_2.axaml.cs">
       <DependentUpon>NAND_2.axaml</DependentUpon>
     </Compile>
@@ -44,6 +47,9 @@
     </Compile>
     <Compile Update="Views\Shapes\LightBulb.axaml.cs">
       <DependentUpon>LightBulb.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Shapes\OR_8.axaml.cs">
+      <DependentUpon>OR_8.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Shapes\Switch.axaml.cs">
       <DependentUpon>Switch.axaml</DependentUpon>

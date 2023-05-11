@@ -51,7 +51,7 @@
 				<TextBlock Text="{Binding Logg}" Background="AliceBlue"/>
 				<Canvas Tag="Scene" Name="Canvas" Background="#0000"/>
 			</Panel>
-			<ListBox Items="{Binding ItemTypes}" SelectedIndex="{Binding SelectedItem}" Name="Gates">
+			<ListBox Items="{Binding ItemTypes}" SelectedIndex="{Binding SelectedItem}" Name="Gates" VirtualizationMode="None">
 				<ListBox.ItemTemplate>
 					<DataTemplate>
 						<ContentControl Content="{Binding}"/>
@@ -67,7 +67,7 @@
 						</Button>
 					</Grid>
 				</Border>
-				<ListBox Grid.Row="1" Padding="10 4 0 0" Items="{Binding Schemes}">
+				<ListBox Grid.Row="1" Padding="10 4 0 0" Items="{Binding Schemes}" VirtualizationMode="None">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
 							<Border Classes="b">

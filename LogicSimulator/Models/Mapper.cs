@@ -71,11 +71,13 @@ namespace LogicSimulator.Models {
                 7 => new LightBulb(),
                 8 => new NAND_2(),
                 9 => new FlipFlop(),
+                10 => new OR_8(),
+                11 => new AND_8(),
                 _ => new AND_2(),
             };
         }
 
-        public IGate[] item_types = Enumerable.Range(0, 10).Select(CreateItem).ToArray();
+        public IGate[] item_types = Enumerable.Range(0, 12).Select(CreateItem).ToArray();
 
         public IGate GenSelectedItem() => CreateItem(selected_item);
 
