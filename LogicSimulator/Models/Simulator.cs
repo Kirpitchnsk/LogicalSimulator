@@ -2,7 +2,6 @@
 using LogicSimulator.Views.Shapes;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -112,6 +111,11 @@ namespace LogicSimulator.Models {
 
             (outs2, outs) = (outs, outs2); // Магия здесь!
             // Log.Write("Выходы: " + Utils.Obj2json(outs));
+
+            if (comparative_test_mode) {
+                prev_state = cur_state;
+                cur_state = Export();
+            }
         }
 
         public string Export() => string.Join("", outs.Select(x => x ? '1' : '0'));
@@ -132,5 +136,26 @@ namespace LogicSimulator.Models {
          */
 
         public void TopSecretPublicTickMethod() => Tick();
+
+        // Для комплесного решения:
+
+        public Switch[] GetSwitches() => items.Select(x => x.item).OfType<Switch>().ToArray();
+        public LightBulb[] GetLightBulbs() => items.Select(x => x.item).OfType<LightBulb>().ToArray();
+
+        // Для УМНОГО комплесного решения XD:
+
+        private bool comparative_test_mode = false;
+        private string prev_state;
+        private string cur_state;
+
+        public bool ComparativeTestMode {
+            get => comparative_test_mode;
+            set {
+                comparative_test_mode = value;
+                if (value) prev_state = cur_state = Export();
+            }
+        }
+
+        public bool SomethingHasChanged => prev_state != cur_state;
     }
 }

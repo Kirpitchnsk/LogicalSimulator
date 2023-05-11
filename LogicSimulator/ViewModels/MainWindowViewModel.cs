@@ -181,6 +181,8 @@ namespace LogicSimulator.ViewModels {
                 break;
             case "Save":
                 map.Export();
+                // Для создания тестовых штучек:
+                File.WriteAllText("../../../for_test.json", Utils.Obj2json((map.current_scheme ?? throw new System.Exception("Чё?!")).Export()));
                 break;
             case "SaveAs":
                 map.Export();
