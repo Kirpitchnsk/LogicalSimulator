@@ -458,5 +458,9 @@ namespace LogicSimulator.Views.Shapes {
         public virtual void ExtraImport(string key, object extra) {
             Log.Write(key + "-запись элемента не поддерживается");
         }
+
+        /* Для тестирования */
+
+        public Ellipse SecretGetPin(int n) => pins[n];
     }
 }

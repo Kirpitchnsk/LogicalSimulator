@@ -1,12 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
-using DynamicData;
-using HarfBuzzSharp;
 using LogicSimulator.Models;
 using LogicSimulator.ViewModels;
 using LogicSimulator.Views;
 using LogicSimulator.Views.Shapes;
+using Button = Avalonia.Controls.Button;
 
 namespace UITestsLogicSimulator {
     public class AllTestsInOnePlace {
@@ -15,6 +15,7 @@ namespace UITestsLogicSimulator {
         private readonly Mapper map = ViewModelBase.map;
 
         private readonly Canvas canv;
+        private readonly ListBox gates;
 
 
 
@@ -35,13 +36,14 @@ namespace UITestsLogicSimulator {
             // Только таки имбовая возможность создать проект, но никогда не определять ему файл
             // сохранения, от чего данные unit-test'ы никогда не появлияют на файловую систему :D
 
-            canv = mainWindow.GetVisualDescendants().OfType<Canvas>().First(x => (string?) x.Tag == "Scene");
+            var vis_arr = mainWindow.GetVisualDescendants();
+            canv = vis_arr.OfType<Canvas>().First(x => (string?) x.Tag == "Scene");
             // canv.PointerEnter
             // И тут выясняется, что я в принципе не могу имитировать клики по холсту, по этому
             // придётся воздействовать на приложение через Mapper на прямую.
 
-            map.sim.Stop();
-            // GeneralTest();
+            gates = vis_arr.OfType<ListBox>().First(x => x.Name == "Gates");
+            map.sim.Stop(); // чтобы в холостую не работало, я сам задам количество тиков методом Ticks здесь
         }
 
 
@@ -60,32 +62,53 @@ namespace UITestsLogicSimulator {
             }
             return null;
         }
-        private void Move(Control target, double x, double y, double x2, double y2) {
-            Point pos = new(x, y), pos2 = new(x2, y2);
-            map.Press(target, pos);
-            int mode = map.Release(target, pos2); // В себе уже имеет map.Move(target, pos2)
+        private void Move(Control a, Control b) {
+            map.Move(a, new());
+            map.Press(a, new());
+            int mode = map.Release(b, new(100, 100), false); // В себе уже имеет map.Move(target, pos2)
             Log("Moved: " + map.tapped + " | " + mode);
         }
         private string Export() {
             map.Export();
             var scheme = map.current_scheme;
-            return scheme != null ? Utils.Obj2json(scheme.Export()) : "Scheme not defined";
+            if (scheme == null) return "Scheme not defined";
+
+            scheme.Created = 123;
+            scheme.Modified = 456;
+            return Utils.Obj2json(scheme.Export());
+        }
+        private void SelectGate(int id) => gates.SelectedIndex = id; // Хоть что-то хотя бы возможно сделать чисто через визуальную часть, а не в обход обёрток, нюхающих ивенты ;'-}
+        private void Ticks(int count) {
+            while (count-- > 0) map.sim.TopSecretPublicTickMethod();
         }
 
 
 
         [Fact]
-        public async void GeneralTest() {
-            await Task.Delay(10);
+        public void GeneralTest() {
+            Task.Delay(10).GetAwaiter().GetResult();
 
-            Click(canv, 100, 100);
+            SelectGate(0); // AND-gate
+            Task.Delay(1).GetAwaiter().GetResult();
+
+            IGate? gate = Click(canv, 100, 100);
+            Assert.NotNull(gate);
             var data = Export();
-            Assert.Equal("{\"name\": \"Newy\", \"created\": 1683824960, \"modified\": 1683824960, \"items\": [{\"id\": 0, \"pos\": \"$p$100,100\", \"size\": \"$s$90,90\", \"base_size\": 25}], \"joins\": [], \"states\": \"00\"}", data);
+            Assert.Equal("{\"name\": \"Newy\", \"created\": 123, \"modified\": 456, \"items\": [{\"id\": 0, \"pos\": \"$p$100,100\", \"size\": \"$s$90,90\", \"base_size\": 25}], \"joins\": [], \"states\": \"00\"}", data);
 
-            // Assert.Equal("Есть пустые КС|1,333 1,333 0,333 1,667 1,1667|NaN|--", TextAll());
-            // Assert.Equal("Yellow|Yellow|Red|Green|Yellow", AllColors());
-            // Assert.Equal("А А А|2,0,1,1~В В В|1,2,0,2~И И И|1,2,0,2", SuperLoader());
+            SelectGate(1); // OR-gate
+            Task.Delay(1).GetAwaiter().GetResult();
 
+            IGate? gate2 = Click(canv, 150, 150);
+            Assert.NotNull(gate2);
+
+            Move(gate.SecretGetPin(2), gate2.SecretGetPin(0));
+
+            data = Export();
+            Assert.Equal("{\"name\": \"Newy\", \"created\": 123, \"modified\": 456, \"items\": [{\"id\": 0, \"pos\": \"$p$100,100\", \"size\": \"$s$90,90\", \"base_size\": 25}, {\"id\": 1, \"pos\": \"$p$150,150\", \"size\": \"$s$90,90\", \"base_size\": 25}], \"joins\": [[0, 2, \"Out\", 1, 0, \"In\"]], \"states\": \"000\"}", data);
+
+            Log("Export: " + Export());
+            Log("ОК!");
         }
     }
 }

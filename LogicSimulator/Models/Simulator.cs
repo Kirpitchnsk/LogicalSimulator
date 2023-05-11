@@ -126,5 +126,11 @@ namespace LogicSimulator.Models {
             items.Clear();
             ids.Clear();
         }
+
+        /*
+         * Для тестирования
+         */
+
+        public void TopSecretPublicTickMethod() => Tick();
     }
 }

@@ -267,10 +267,10 @@ namespace LogicSimulator.Models {
                 FixItem(ref res, pos, item.GetLogicalChildren());
             }
         }
-        public void Move(Control item, Point pos) {
+        public void Move(Control item, Point pos, bool use_fix = true) {
             // Log.Write("PointerMoved: " + item.GetType().Name + " pos: " + pos);
 
-            if (mode == 5 || mode == 6 || mode == 7 || mode == 8) {
+            if (use_fix && (mode == 5 || mode == 6 || mode == 7 || mode == 8)) {
                 var tb = canv.TransformedBounds;
                 if (tb != null) {
                     item = new Canvas() { Tag = "Scene" };
@@ -349,8 +349,8 @@ namespace LogicSimulator.Models {
         public bool tapped = false; // Обрабатывается после Release
         public Point tap_pos; // Обрабатывается после Release
 
-        public int Release(Control item, Point pos) {
-            Move(item, pos);
+        public int Release(Control item, Point pos, bool use_fix = true) {
+            Move(item, pos, use_fix);
             // Log.Write("PointerReleased: " + item.GetType().Name + " pos: " + pos);
 
             switch (mode) {
