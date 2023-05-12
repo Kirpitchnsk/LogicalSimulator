@@ -71,11 +71,13 @@ namespace LogicSimulator.Models {
                 7 => new LightBulb(),
                 8 => new NAND_2(),
                 9 => new FlipFlop(),
+                10 => new OR_8(),
+                11 => new AND_8(),
                 _ => new AND_2(),
             };
         }
 
-        public IGate[] item_types = Enumerable.Range(0, 10).Select(CreateItem).ToArray();
+        public IGate[] item_types = Enumerable.Range(0, 12).Select(CreateItem).ToArray();
 
         public IGate GenSelectedItem() => CreateItem(selected_item);
 
@@ -267,10 +269,10 @@ namespace LogicSimulator.Models {
                 FixItem(ref res, pos, item.GetLogicalChildren());
             }
         }
-        public void Move(Control item, Point pos) {
+        public void Move(Control item, Point pos, bool use_fix = true) {
             // Log.Write("PointerMoved: " + item.GetType().Name + " pos: " + pos);
 
-            if (mode == 5 || mode == 6 || mode == 7 || mode == 8) {
+            if (use_fix && (mode == 5 || mode == 6 || mode == 7 || mode == 8)) {
                 var tb = canv.TransformedBounds;
                 if (tb != null) {
                     item = new Canvas() { Tag = "Scene" };
@@ -349,8 +351,8 @@ namespace LogicSimulator.Models {
         public bool tapped = false; // Обрабатывается после Release
         public Point tap_pos; // Обрабатывается после Release
 
-        public int Release(Control item, Point pos) {
-            Move(item, pos);
+        public int Release(Control item, Point pos, bool use_fix = true) {
+            Move(item, pos, use_fix);
             // Log.Write("PointerReleased: " + item.GetType().Name + " pos: " + pos);
 
             switch (mode) {
@@ -491,6 +493,7 @@ namespace LogicSimulator.Models {
             List<object[]> joins = new();
             foreach (var item in items) joins.Add(item.ExportJoins(item_to_num));
 
+            sim.Clean();
             string states = sim.Export();
 
             try { current_scheme.Update(arr, joins.ToArray(), states); }
@@ -501,7 +504,7 @@ namespace LogicSimulator.Models {
             Log.Write("States: " + Utils.Obj2json(states)); */
         }
 
-        public void ImportScheme() {
+        public void ImportScheme(bool start = true) {
             if (current_scheme == null) return;
 
             sim.Stop();
@@ -542,7 +545,7 @@ namespace LogicSimulator.Models {
 
             sim.Import(current_scheme.states);
             sim.lock_sim = false;
-            sim.Start();
+            if (start) sim.Start(); // Во время тестирования лучше и близко не прикасаться к этой функции XD
         }
     }
 }

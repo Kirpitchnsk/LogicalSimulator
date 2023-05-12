@@ -26,11 +26,18 @@ namespace LogicSimulator.Views.Shapes {
         readonly SolidColorBrush ColorA = new(Color.Parse("#00ff00")); // On
         readonly SolidColorBrush ColorB = new(Color.Parse("#1c1c1c")); // Off
         public void Brain(ref bool[] ins, ref bool[] outs) {
-            var value = ins[0];
+            var value = state = ins[0];
             Dispatcher.UIThread.InvokeAsync(() => {
                 border.Background = value ? ColorA : ColorB;
             });
-            
         }
+
+        /*
+         * Для тестирования
+         */
+
+        bool state;
+
+        public bool GetState() => state;
     }
 }

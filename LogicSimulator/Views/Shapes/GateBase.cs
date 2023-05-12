@@ -45,8 +45,11 @@ namespace LogicSimulator.Views.Shapes {
             CountIns = ins;
             CountOuts = outs + ios;
 
-            double sizer = sides.Select(x => x.Length).Max();
-            width = height = 30 * (2 + sizer / 2);
+            /* double sizer = sides.Select(x => x.Length).Max();
+            double vert_sizer = Math.Max(Math.Max(sides[0].Length, sides[3].Length), 3);
+            width = 30 * (2 + Math.Min(sizer, vert_sizer) / 2);
+            height = Math.Max(30 * (2 + sizer / 2), (9 + 32) * 2 / 3 * (1.5 + 0.75 * CountIns.Max(CountOuts)));*/
+            width = MinW; height = MinH;
             // AvaloniaXamlLoader.Load(GetSelf()); // InitializeComponent(); Не вышло :///
             // А так от Init бы полностью отказался бы ;'-} Принцип Подскановки Лископ бы просто пылал от этого, хоть абстрактному классу и положено зависеть от потомка ;'-}
             DataContext = GetSelf();
@@ -91,10 +94,11 @@ namespace LogicSimulator.Views.Shapes {
             UpdateJoins(global);
         }
 
+        private double MinW => BodyRadius.TopLeft * 2 + (EllipseSize + BaseFraction * 2) * (Sides[0].Length.Max(Sides[3].Length).Max(2) - 0.8);
+        private double MinH => BodyRadius.TopLeft * 2 + (EllipseSize + BaseFraction * 2) * (Sides[1].Length.Max(Sides[2].Length).Max(2) - 0.8);
         public void Resize(Size size, bool global = false) {
-            double limit = (9 + 32) * 2 * (base_size / 25);
-            width = size.Width.Max(limit / 3 * (CountIns == 0 || CountOuts == 0 ? 2.25 : 3));
-            height = size.Height.Max(limit / 3 * (1.5 + 0.75 * CountIns.Max(CountOuts)));
+            width = global ? size.Width : size.Width.Max(MinW);
+            height = global ? size.Height : size.Height.Max(MinH);
             RecalcSizes();
             UpdateJoins(global);
         }
@@ -452,11 +456,15 @@ namespace LogicSimulator.Views.Shapes {
                 }
             }
             base_size = new_b_size;
-            Resize(new_size);
+            Resize(new_size, true);
             Move(new_pos);
         }
         public virtual void ExtraImport(string key, object extra) {
             Log.Write(key + "-запись элемента не поддерживается");
         }
+
+        /* Для тестирования */
+
+        public Ellipse SecretGetPin(int n) => pins[n];
     }
 }

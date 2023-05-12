@@ -62,5 +62,14 @@ namespace LogicSimulator.Views.Shapes {
             my_state = @state;
             if (my_state) border.Background = new SolidColorBrush(Color.Parse("#7d1414"));
         }
+
+        /*
+         * Для тестирования
+         */
+
+        public void SetState(bool state) {
+            my_state = state;
+            border.Background = new SolidColorBrush(Color.Parse(state ? "#7d1414" : "#d32f2e"));
+        }
     }
 }

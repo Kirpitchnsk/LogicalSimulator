@@ -1,5 +1,4 @@
 ﻿using Avalonia.Controls;
-using LogicSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -113,5 +112,11 @@ namespace LogicSimulator.Models {
             Save();
             parent.AppendProject(this);
         }
+
+        /*
+         * Для тестирования
+         */
+
+        public void SetDir(string path) => FileDir = path;
     }
 }

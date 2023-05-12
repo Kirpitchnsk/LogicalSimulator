@@ -49,7 +49,10 @@ namespace LogicSimulator.Models {
         }
         private Project? LoadProject(string dir, string fileName) {
             try {
-                var obj = Utils.Xml2obj(File.ReadAllText(Path.Combine(dir, fileName))) ?? throw new DataException("Не верная структура XML-файла проекта!");
+                var path = Path.Combine(dir, fileName);
+                if (!File.Exists(path)) return null;
+
+                var obj = Utils.Json2obj(File.ReadAllText(path)) ?? throw new DataException("Не верная структура JSON-файла проекта!");
                 var proj = new Project(this, dir, fileName, obj);
                 AddProject(proj);
                 return proj;

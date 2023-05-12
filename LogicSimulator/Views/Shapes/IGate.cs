@@ -36,5 +36,7 @@ namespace LogicSimulator.Views.Shapes {
         public object Export();
         public List<object[]> ExportJoins(Dictionary<IGate, int> to_num);
         public void Import(Dictionary<string, object> dict);
+
+        public Ellipse SecretGetPin(int n);
     }
 }

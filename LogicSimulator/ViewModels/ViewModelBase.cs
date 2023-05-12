@@ -13,5 +13,11 @@ namespace LogicSimulator.ViewModels {
                 map.current_scheme = value.GetFirstScheme();
             }
         }
+
+        /*
+         * Для тестирования
+         */
+
+        public static Project? TopSecretGetProj() => current_proj;
     }
 }
