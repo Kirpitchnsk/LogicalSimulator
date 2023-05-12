@@ -493,6 +493,7 @@ namespace LogicSimulator.Models {
             List<object[]> joins = new();
             foreach (var item in items) joins.Add(item.ExportJoins(item_to_num));
 
+            sim.Clean();
             string states = sim.Export();
 
             try { current_scheme.Update(arr, joins.ToArray(), states); }

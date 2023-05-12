@@ -3,6 +3,7 @@ using LogicSimulator.Views.Shapes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace LogicSimulator.Models {
@@ -85,7 +86,11 @@ namespace LogicSimulator.Models {
 
             Meta meta = ids[item];
             meta.item = null;
-            foreach (var i in Enumerable.Range(0, meta.outs.Length)) meta.outs[i] = 0;
+            foreach (var i in Enumerable.Range(0, meta.outs.Length)) {
+                int n = meta.outs[i];
+                outs[n] = outs2[n] = false;
+            }
+            ids.Remove(item);
 
             Start();
         }
@@ -118,11 +123,29 @@ namespace LogicSimulator.Models {
             }
         }
 
+        public void Clean() {
+            int n = 0;
+            int[] arr = Enumerable.Repeat(-1, outs.Count).ToArray();
+            StringBuilder sb = new();
+            sb.Append('0');
+            foreach (var meta in items)
+                if (meta.item != null)
+                    foreach (var @out in meta.outs) {
+                        arr[@out] = ++n;
+                        sb.Append(outs[@out] ? '1' : '0');
+                    }
+            arr[0] = 0;
+            foreach (var meta in items) {
+                meta.outs = meta.outs.Select(x => arr[x]).ToArray();
+                meta.ins = meta.ins.Select(x => arr[x]).ToArray();
+            }
+            Import(sb.ToString());
+        }
         public string Export() => string.Join("", outs.Select(x => x ? '1' : '0'));
         public void Import(string state) {
             if (state.Length == 0) state = "0";
             outs = state.Select(x => x == '1').ToList();
-            outs2 = Enumerable.Repeat(false, state.Length).ToList();
+            outs2 = outs.ToList(); // clone
         }
         public void Clear() {
             outs = new() { false };
@@ -145,8 +168,8 @@ namespace LogicSimulator.Models {
         // Для УМНОГО комплесного решения XD:
 
         private bool comparative_test_mode = false;
-        private string prev_state;
-        private string cur_state;
+        private string prev_state = "0";
+        private string cur_state = "0";
 
         public bool ComparativeTestMode {
             get => comparative_test_mode;
