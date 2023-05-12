@@ -97,8 +97,8 @@ namespace LogicSimulator.Views.Shapes {
         private double MinW => BodyRadius.TopLeft * 2 + (EllipseSize + BaseFraction * 2) * (Sides[0].Length.Max(Sides[3].Length).Max(2) - 0.8);
         private double MinH => BodyRadius.TopLeft * 2 + (EllipseSize + BaseFraction * 2) * (Sides[1].Length.Max(Sides[2].Length).Max(2) - 0.8);
         public void Resize(Size size, bool global = false) {
-            width = size.Width.Max(MinW);
-            height = size.Height.Max(MinH);
+            width = global ? size.Width : size.Width.Max(MinW);
+            height = global ? size.Height : size.Height.Max(MinH);
             RecalcSizes();
             UpdateJoins(global);
         }
@@ -456,7 +456,7 @@ namespace LogicSimulator.Views.Shapes {
                 }
             }
             base_size = new_b_size;
-            Resize(new_size);
+            Resize(new_size, true);
             Move(new_pos);
         }
         public virtual void ExtraImport(string key, object extra) {

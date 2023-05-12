@@ -503,7 +503,7 @@ namespace LogicSimulator.Models {
             Log.Write("States: " + Utils.Obj2json(states)); */
         }
 
-        public void ImportScheme() {
+        public void ImportScheme(bool start = true) {
             if (current_scheme == null) return;
 
             sim.Stop();
@@ -544,7 +544,7 @@ namespace LogicSimulator.Models {
 
             sim.Import(current_scheme.states);
             sim.lock_sim = false;
-            sim.Start();
+            if (start) sim.Start(); // Во время тестирования лучше и близко не прикасаться к этой функции XD
         }
     }
 }
