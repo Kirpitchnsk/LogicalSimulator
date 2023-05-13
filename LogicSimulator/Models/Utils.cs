@@ -244,7 +244,7 @@ namespace LogicSimulator.Models {
 
         private static string ToJSONHandler(string str) {
             if (str.Length > 1 && str[0] == '$' && str[1] <= '9' && str[1] >= '0') return str[1..]; // unescape NUM
-            return str switch {
+            return str.Replace("\\", "\\\\") switch {
                 "null" => "null",
                 "undefined" => "undefined",
                 "_BOOL_yeah" => "true",
