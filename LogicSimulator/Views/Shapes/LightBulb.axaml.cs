@@ -1,7 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
+using LogicSimulator.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace LogicSimulator.Views.Shapes {
@@ -39,5 +41,18 @@ namespace LogicSimulator.Views.Shapes {
         bool state;
 
         public bool GetState() => state;
+
+        /*
+         * Кастомный экспорт и импорт
+         */
+
+        public override Dictionary<string, object> ExtraExport() => new() { ["state"] = state };
+
+        public override void ExtraImport(string key, object extra) {
+            if (key != "state") { Log.Write(key + "-запись элемента не поддерживается"); return; }
+            if (extra is not bool @st) { Log.Write("Неверный тип state-записи элемента: " + extra); return; }
+            state = @st;
+            if (state) border.Background = ColorA;
+        }
     }
 }
