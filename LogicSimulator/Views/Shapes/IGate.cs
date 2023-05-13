@@ -30,6 +30,7 @@ namespace LogicSimulator.Views.Shapes {
         public bool ContainsJoin(JoinedItems join);
 
         public void Brain(ref bool[] ins, ref bool[] outs);
+        public int[][] GetPinData();
         public void LogicUpdate(Dictionary<IGate, Meta> ids, Meta me);
 
         public int TypeId { get; }

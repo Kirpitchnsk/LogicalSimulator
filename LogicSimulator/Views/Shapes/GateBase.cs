@@ -27,6 +27,7 @@ namespace LogicSimulator.Views.Shapes {
         protected bool use_left;
         protected bool use_right;
         protected bool use_bottom;
+        private int[][] pin_data;
 
         public GateBase() {
             var sides = Sides;
@@ -34,14 +35,18 @@ namespace LogicSimulator.Views.Shapes {
             use_left = sides[1].Length > 0;
             use_right = sides[2].Length > 0;
             use_bottom = sides[3].Length > 0;
-            int ins = 0, outs = 0, ios = 0;
+            int ins = 0, outs = 0, ios = 0, n = 0;
+            List<int[]> pin_d = new();
             foreach (var side in sides)
-                foreach (var type in side)
+                foreach (var type in side) {
                     switch (type) {
-                    case 0: ins++; break;
-                    case 1: outs++; break;
-                    case 2: ios++; break;
+                    case 0: pin_d.Add(new int[] { 0, ins }); ins++; break;
+                    case 1: pin_d.Add(new int[] { 1, outs }); outs++; break;
+                    case 2: pin_d.Add(new int[] { 2, ios }); ios++; break;
                     }
+                    if (type != -1) n++;
+                }
+            pin_data = pin_d.ToArray();
             CountIns = ins;
             CountOuts = outs + ios;
 
@@ -182,9 +187,9 @@ namespace LogicSimulator.Views.Shapes {
                         mid + min * (n2 - (count - 1) / 2) :
                         left + (right - left) / (count * 2) * (n2 * 2 + 1);
                     if (type >= 0) res.Add(n == 0 || n == 3 ?
-                        new Point[] { new(delta2, delta), new(0, pin_width) } :
-                        new Point[] { new(delta, delta2), new(pin_width, 0) }
-                    );
+                        new Point[] { new(delta2 + (use_left ? base_size : 0), delta), new(0, pin_width) } :
+                        new Point[] { new(delta, delta2 + (use_top ? base_size : 0)), new(pin_width, 0) }
+                    );;
                     n2++;
                 }
             }
@@ -195,10 +200,22 @@ namespace LogicSimulator.Views.Shapes {
             Point[][] pins = PinPoints;
             double R2 = EllipseSize / 2;
             double X = UC_Width - EllipseSize;
-            int n = 0;
+            double Y = UC_Height - EllipseSize;
+            int n = 0, side_n = 0;
             List<Thickness> list = new();
-            foreach (var pin_line in pins)
-                list.Add(new(n++ < CountIns ? 0 : X, pin_line[0].Y - R2, 0, 0));
+            foreach (var side in Sides) {
+                foreach (var type in side) {
+                    if (type == -1) continue;
+                    var pin_line = pins[n++];
+                    switch (side_n) {
+                    case 0: list.Add(new(pin_line[0].Y - R2, 0, 0, 0)); break;
+                    case 1: list.Add(new(0, pin_line[0].Y - R2, 0, 0)); break;
+                    case 2: list.Add(new(X, pin_line[0].Y - R2, 0, 0)); break;
+                    case 3: list.Add(new(pin_line[0].X - R2, Y, 0, 0)); break;
+                    }
+                }
+                side_n++;
+            }
             return ellipse_margins = list.ToArray();
         } }
 
@@ -272,14 +289,15 @@ namespace LogicSimulator.Views.Shapes {
             for (int i = 0; i < 2; i++) {
                 var dist = i == 0 ? join.A : join.B;
                 if (dist.parent == this) {
-                    int n = dist.num;
-                    if (n < CountIns) {
+                    int[] data = pin_data[dist.num];
+                    int n = data[1];
+                    if (data[0] == 0) {
                         joins_in[n]?.Delete();
                         joins_in[n] = join;
                         // Log.Write("AddIn: " + n);
                     } else {
-                        joins_out[n - CountIns].Add(join);
-                        // Log.Write("AddOut: " + CountIns);
+                        joins_out[n].Add(join);
+                        // Log.Write("AddOut: " + n);
                     }
                 }
             }
@@ -290,9 +308,10 @@ namespace LogicSimulator.Views.Shapes {
             for (int i = 0; i < 2; i++) {
                 var dist = i == 0 ? join.A : join.B;
                 if (dist.parent == this) {
-                    int n = dist.num;
-                    if (n < CountIns) joins_in[n] = null;
-                    else joins_out[n - CountIns].Remove(join);
+                    int[] data = pin_data[dist.num];
+                    int n = data[1];
+                    if (data[0] == 0) joins_in[n] = null;
+                    else joins_out[n].Remove(join);
                 }
             }
             skip_upd = false;
@@ -365,6 +384,8 @@ namespace LogicSimulator.Views.Shapes {
          * Мозги
          */
 
+        public int[][] GetPinData() => pin_data;
+
         bool skip_upd = true;
         public void LogicUpdate(Dictionary<IGate, Meta> ids, Meta me) {
             if (skip_upd) return;
@@ -380,7 +401,9 @@ namespace LogicSimulator.Views.Shapes {
                     if (item.tag == "Out" || item.tag == "IO") {
                         var p = item.parent;
                         Meta meta = ids[p];
-                        me.ins[i] = meta.outs[item.num - p.CountIns];
+                        int[] data = p.GetPinData()[item.num];
+                        me.ins[i] = meta.outs[data[1]];
+                        // Log.Write("ins: " + Utils.Obj2json(me.ins) + " | " + data[1]);
                     }
                 }
                 if (join.B.parent == this) {
@@ -388,7 +411,9 @@ namespace LogicSimulator.Views.Shapes {
                     if (item.tag == "Out" || item.tag == "IO") {
                         var p = item.parent;
                         Meta meta = ids[p];
-                        me.ins[i] = meta.outs[item.num - p.CountIns];
+                        int[] data = p.GetPinData()[item.num];
+                        me.ins[i] = meta.outs[data[1]];
+                        // Log.Write("ins: " + Utils.Obj2json(me.ins) + " | " + data[1]);
                     }
                 }
             }
