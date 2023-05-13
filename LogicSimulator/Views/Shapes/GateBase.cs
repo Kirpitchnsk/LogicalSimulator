@@ -55,6 +55,7 @@ namespace LogicSimulator.Views.Shapes {
             width = 30 * (2 + Math.Min(sizer, vert_sizer) / 2);
             height = Math.Max(30 * (2 + sizer / 2), (9 + 32) * 2 / 3 * (1.5 + 0.75 * CountIns.Max(CountOuts)));*/
             width = MinW; height = MinH;
+            if (height < width) height = width;
             // AvaloniaXamlLoader.Load(GetSelf()); // InitializeComponent(); Не вышло :///
             // А так от Init бы полностью отказался бы ;'-} Принцип Подскановки Лископ бы просто пылал от этого, хоть абстрактному классу и положено зависеть от потомка ;'-}
             DataContext = GetSelf();
@@ -99,8 +100,8 @@ namespace LogicSimulator.Views.Shapes {
             UpdateJoins(global);
         }
 
-        private double MinW => BodyRadius.TopLeft * 2 + (EllipseSize + BaseFraction * 2) * (Sides[0].Length.Max(Sides[3].Length).Max(2) - 0.8);
-        private double MinH => BodyRadius.TopLeft * 2 + (EllipseSize + BaseFraction * 2) * (Sides[1].Length.Max(Sides[2].Length).Max(2) - 0.8);
+        private double MinW => BodyRadius.TopLeft * 1.5 + (EllipseSize + BaseFraction * 2) * (Sides[0].Length.Max(Sides[3].Length).Max(2) - 0.8);
+        private double MinH => BodyRadius.TopLeft * 1.5 + (EllipseSize + BaseFraction * 2) * (Sides[1].Length.Max(Sides[2].Length).Max(2) - 0.8);
         public void Resize(Size size, bool global = false) {
             width = global ? size.Width : size.Width.Max(MinW);
             height = global ? size.Height : size.Height.Max(MinH);
