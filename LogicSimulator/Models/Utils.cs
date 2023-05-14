@@ -244,12 +244,12 @@ namespace LogicSimulator.Models {
 
         private static string ToJSONHandler(string str) {
             if (str.Length > 1 && str[0] == '$' && str[1] <= '9' && str[1] >= '0') return str[1..]; // unescape NUM
-            return str.Replace("\\", "\\\\") switch {
+            return str switch {
                 "null" => "null",
                 "undefined" => "undefined",
                 "_BOOL_yeah" => "true",
                 "_BOOL_nop" => "false",
-                _ => '"' + str + '"',
+                _ => '"' + str.Replace("\\", "\\\\") + '"',
             };
         }
         private static string ToJSONHandler(XElement xml) {
